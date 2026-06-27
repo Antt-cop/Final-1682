@@ -1,0 +1,168 @@
+/* Admin Panel Custom CSS */
+@import "https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700";
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: #f4f7f6;
+}
+
+/* ---------------------------------------------------
+    SIDEBAR STYLE
+----------------------------------------------------- */
+.admin-wrapper {
+    display: flex;
+    width: 100%;
+    align-items: stretch;
+}
+
+.admin-sidebar {
+    min-width: 250px;
+    max-width: 250px;
+    background: #343a40;
+    color: #fff;
+    transition: all 0.3s;
+    min-height: 100vh;
+}
+
+.admin-sidebar.active {
+    margin-left: -250px;
+}
+
+.admin-sidebar .sidebar-header {
+    padding: 20px;
+    background: #23282d;
+}
+
+.admin-sidebar .sidebar-header h3 {
+    color: #b0b435;
+    margin: 0;
+    font-weight: 700;
+}
+
+.admin-sidebar ul.components {
+    padding: 20px 0;
+    border-bottom: 1px solid #47748b;
+}
+
+.admin-sidebar ul li a {
+    padding: 15px 20px;
+    font-size: 1.1em;
+    display: block;
+    color: #fff;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+
+.admin-sidebar ul li a i {
+    margin-right: 10px;
+    width: 20px;
+    text-align: center;
+}
+
+.admin-sidebar ul li a:hover {
+    color: #b0b435;
+    background: #fff;
+}
+
+.admin-sidebar ul li.active > a {
+    color: #b0b435;
+    background: #fff;
+}
+
+ul.CTAs {
+    padding: 20px;
+}
+
+ul.CTAs a {
+    text-align: center;
+    font-size: 0.9em !important;
+    display: block;
+    border-radius: 5px;
+    margin-bottom: 5px;
+}
+
+a.back-home {
+    background: #b0b435;
+    color: #fff;
+}
+
+a.back-home:hover {
+    background: #8e9129;
+    color: #fff;
+}
+
+/* ---------------------------------------------------
+    CONTENT STYLE
+----------------------------------------------------- */
+.admin-content {
+    width: 100%;
+    padding: 0;
+    min-height: 100vh;
+    transition: all 0.3s;
+}
+
+.admin-navbar {
+    padding: 15px 20px;
+    background: #fff;
+    border-bottom: 1px solid #ddd;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.btn-admin {
+    background: #b0b435;
+    color: #fff;
+    border: none;
+}
+.btn-admin:hover {
+    background: #8e9129;
+    color: #fff;
+}
+
+/* ---------------------------------------------------
+    CARDS & TABLES
+----------------------------------------------------- */
+.card {
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    border: none;
+    margin-bottom: 30px;
+}
+
+.card-header {
+    background-color: #fff;
+    border-bottom: 1px solid #eee;
+    padding: 15px 20px;
+}
+
+.card-header h4 {
+    margin: 0;
+    font-weight: 600;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #555;
+}
+
+/* Custom Badges */
+.badge-admin {
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* ---------------------------------------------------
+    MEDIA QUERIES
+----------------------------------------------------- */
+@media (max-width: 768px) {
+    .admin-sidebar {
+        margin-left: -250px;
+    }
+    .admin-sidebar.active {
+        margin-left: 0;
+    }
+    #sidebarCollapse span {
+        display: none;
+    }
+}
