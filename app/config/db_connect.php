@@ -6,7 +6,7 @@ function getDbConnection() {
     $servername = "localhost"; // Typically localhost for XAMPP/Laragon
     $username   = "root";      // Default MySQL user for local setups
     $password   = "";          // Empty password for default XAMPP/Laragon installations
-    $dbname     = "canteen_b2b"; // Updated database name for B2B platform
+    $dbname     = "dongkhoistore"; // Updated database name for B2B platform
 
     // Create connection
     $conn = new mysqli($servername, $username, $password, $dbname);

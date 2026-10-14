@@ -1,11 +1,11 @@
-﻿<?php
+<?php
 if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../../bootstrap.php'; }
 // change_password.php - Handles user password changes
-require_once __DIR__ . '/db_connect.php';
+require_once ROOT_PATH . '/app/config/db_connect.php';
 session_start();
 
 if (!isset($_SESSION['user_id'])) {
-    header('Location: /freshshop-master/public/login.php');
+    header('Location: ' . BASE_URL . '/public/login.php');
     exit;
 }
 
@@ -73,4 +73,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 header('Location: ../my-account-edit.php');
 exit;
+
+
 

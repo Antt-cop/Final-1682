@@ -26,7 +26,7 @@
 @import url(bootsnav.css);
 @import url(owl.carousel.min.css);
 @import url(jquery-ui.css);
-@import url(nice-select.css);
+
 @import url(baguetteBox.min.css);
 
 /*------------------------------------------------------------------
@@ -240,7 +240,7 @@
  .offer-box li i{
      margin-right: 15px;
      color: #b0b435;
-     font-size: 20px;
+     font-size: 32px;
 }
  .our-link{
      float: left;
@@ -739,23 +739,23 @@
 }
 /*------------------------------------------------------------------ Slider -------------------------------------------------------------------*/
  .cover-slides{
-     height: 100vh;
+     height: 50vh;
 }
  .slides-navigation a {
      background: #b0b435;
      position: absolute;
-     height: 70px;
-     width: 70px;
+     height: 45px;
+     width: 45px;
      top: 50%;
      font-size: 20px;
      display: block;
      color: #fff;
-     line-height: 90px;
+     line-height: 45px;
      text-align: center;
      transition: all .3s ease-in-out;
 }
  .slides-navigation a i{
-     font-size: 40px;
+     font-size: 25px;
 }
  .slides-navigation a:hover {
      background: #000000;
@@ -2597,6 +2597,8 @@
 	padding: 12px 25px;
 	border: none;
 }
+
+
 
 
 

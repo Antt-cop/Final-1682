@@ -1,7 +1,29 @@
-﻿<?php
+<?php
 if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; }
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
+require_once ROOT_PATH . '/app/config/db_connect.php';
+
+// Ensure user is logged in
+if (!isset($_SESSION['user_id'])) {
+    $_SESSION['error'] = 'Please login to checkout.';
+    header("Location: " . BASE_URL . "/public/login.php");
+    exit;
+}
+
+$conn = getDbConnection();
+
+// Fetch Cart Products for Summary using packaging helper
+$resolved_cart = resolve_cart_items($_SESSION['cart'] ?? [], $conn);
+$cart_items    = $resolved_cart['items'];
+$sub_total     = $resolved_cart['sub_total'];
+$bulk_discount = $resolved_cart['bulk_discount'];
+$grand_total   = $resolved_cart['grand_total'];
+$max_cod_value = 5000000;
+$is_cod_allowed = ($grand_total <= $max_cod_value);
+
+
 $page_name = 'checkout';
-$page_title = 'Checkout - Freshshop';
+$page_title = 'Checkout - Dong Khoi Store';
 include INCLUDES_PATH . '/header.php';
 ?>
 
@@ -12,7 +34,7 @@ include INCLUDES_PATH . '/header.php';
                 <div class="col-lg-12">
                     <h2>Checkout</h2>
                     <ul class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="/freshshop-master/public/shop.php">Shop</a></li>
+                        <li class="breadcrumb-item"><a href="<?= BASE_URL ?>/index.php">Store</a></li>
                         <li class="breadcrumb-item active">Checkout</li>
                     </ul>
                 </div>
@@ -24,268 +46,279 @@ include INCLUDES_PATH . '/header.php';
     <!-- Start Cart  -->
     <div class="cart-box-main">
         <div class="container">
-            <div class="row new-account-login">
-                <div class="col-sm-6 col-lg-6 mb-3">
-                    <div class="title-left">
-                        <h3>Account Login</h3>
-                    </div>
-                    <h5><a data-toggle="collapse" href="#formLogin" role="button" aria-expanded="false">Click here to Login</a></h5>
-                    <form class="mt-3 collapse review-form-box" id="formLogin">
-                        <div class="form-row">
-                            <div class="form-group col-md-6">
-                                <label for="InputEmail" class="mb-0">Email Address</label>
-                                <input type="email" class="form-control" id="InputEmail" placeholder="Enter Email"> </div>
-                            <div class="form-group col-md-6">
-                                <label for="InputPassword" class="mb-0">Password</label>
-                                <input type="password" class="form-control" id="InputPassword" placeholder="Password"> </div>
-                        </div>
-                        <button type="submit" class="btn hvr-hover">Login</button>
-                    </form>
+            <?php if (isset($_SESSION['success'])): ?>
+                <div class="alert alert-success">
+                    <?= htmlspecialchars($_SESSION['success']); unset($_SESSION['success']); ?>
                 </div>
-                <div class="col-sm-6 col-lg-6 mb-3">
-                    <div class="title-left">
-                        <h3>Create New Account</h3>
-                    </div>
-                    <h5><a data-toggle="collapse" href="#formRegister" role="button" aria-expanded="false">Click here to Register</a></h5>
-                    <form class="mt-3 collapse review-form-box" id="formRegister">
-                        <div class="form-row">
-                            <div class="form-group col-md-6">
-                                <label for="InputName" class="mb-0">First Name</label>
-                                <input type="text" class="form-control" id="InputName" placeholder="First Name"> </div>
-                            <div class="form-group col-md-6">
-                                <label for="InputLastname" class="mb-0">Last Name</label>
-                                <input type="text" class="form-control" id="InputLastname" placeholder="Last Name"> </div>
-                            <div class="form-group col-md-6">
-                                <label for="InputEmail1" class="mb-0">Email Address</label>
-                                <input type="email" class="form-control" id="InputEmail1" placeholder="Enter Email"> </div>
-                            <div class="form-group col-md-6">
-                                <label for="InputPassword1" class="mb-0">Password</label>
-                                <input type="password" class="form-control" id="InputPassword1" placeholder="Password"> </div>
-                        </div>
-                        <button type="submit" class="btn hvr-hover">Register</button>
-                    </form>
+                <div class="text-center my-5">
+                    <a href="<?= BASE_URL ?>/index.php" class="btn hvr-hover text-white">Continue Shopping</a>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col-sm-6 col-lg-6 mb-3">
-                    <div class="checkout-address">
-                        <div class="title-left">
-                            <h3>Billing address</h3>
-                        </div>
-                        <form class="needs-validation" novalidate>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="firstName">First name *</label>
-                                    <input type="text" class="form-control" id="firstName" placeholder="" value="" required>
-                                    <div class="invalid-feedback"> Valid first name is required. </div>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="lastName">Last name *</label>
-                                    <input type="text" class="form-control" id="lastName" placeholder="" value="" required>
-                                    <div class="invalid-feedback"> Valid last name is required. </div>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="username">Username *</label>
-                                <div class="input-group">
-                                    <input type="text" class="form-control" id="username" placeholder="" required>
-                                    <div class="invalid-feedback" style="width: 100%;"> Your username is required. </div>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="email">Email Address *</label>
-                                <input type="email" class="form-control" id="email" placeholder="">
-                                <div class="invalid-feedback"> Please enter a valid email address for shipping updates. </div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="address">Address *</label>
-                                <input type="text" class="form-control" id="address" placeholder="" required>
-                                <div class="invalid-feedback"> Please enter your shipping address. </div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="address2">Address 2 *</label>
-                                <input type="text" class="form-control" id="address2" placeholder=""> </div>
-                            <div class="row">
-                                <div class="col-md-5 mb-3">
-                                    <label for="country">Country *</label>
-                                    <select class="wide w-100" id="country">
-									<option value="Choose..." data-display="Select">Choose...</option>
-									<option value="United States">United States</option>
-								</select>
-                                    <div class="invalid-feedback"> Please select a valid country. </div>
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label for="state">State *</label>
-                                    <select class="wide w-100" id="state">
-									<option data-display="Select">Choose...</option>
-									<option>California</option>
-								</select>
-                                    <div class="invalid-feedback"> Please provide a valid state. </div>
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <label for="zip">Zip *</label>
-                                    <input type="text" class="form-control" id="zip" placeholder="" required>
-                                    <div class="invalid-feedback"> Zip code required. </div>
-                                </div>
-                            </div>
-                            <hr class="mb-4">
-                            <div class="custom-control custom-checkbox">
-                                <input type="checkbox" class="custom-control-input" id="same-address">
-                                <label class="custom-control-label" for="same-address">Shipping address is the same as my billing address</label>
-                            </div>
-                            <div class="custom-control custom-checkbox">
-                                <input type="checkbox" class="custom-control-input" id="save-info">
-                                <label class="custom-control-label" for="save-info">Save this information for next time</label>
-                            </div>
-                            <hr class="mb-4">
-                            <div class="title"> <span>Payment</span> </div>
-                            <div class="d-block my-3">
-                                <div class="custom-control custom-radio">
-                                    <input id="credit" name="paymentMethod" type="radio" class="custom-control-input" checked required>
-                                    <label class="custom-control-label" for="credit">Credit card</label>
-                                </div>
-                                <div class="custom-control custom-radio">
-                                    <input id="debit" name="paymentMethod" type="radio" class="custom-control-input" required>
-                                    <label class="custom-control-label" for="debit">Debit card</label>
-                                </div>
-                                <div class="custom-control custom-radio">
-                                    <input id="paypal" name="paymentMethod" type="radio" class="custom-control-input" required>
-                                    <label class="custom-control-label" for="paypal">Paypal</label>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="cc-name">Name on card</label>
-                                    <input type="text" class="form-control" id="cc-name" placeholder="" required> <small class="text-muted">Full name as displayed on card</small>
-                                    <div class="invalid-feedback"> Name on card is required </div>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="cc-number">Credit card number</label>
-                                    <input type="text" class="form-control" id="cc-number" placeholder="" required>
-                                    <div class="invalid-feedback"> Credit card number is required </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-3 mb-3">
-                                    <label for="cc-expiration">Expiration</label>
-                                    <input type="text" class="form-control" id="cc-expiration" placeholder="" required>
-                                    <div class="invalid-feedback"> Expiration date required </div>
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <label for="cc-expiration">CVV</label>
-                                    <input type="text" class="form-control" id="cc-cvv" placeholder="" required>
-                                    <div class="invalid-feedback"> Security code required </div>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <div class="payment-icon">
-                                        <ul>
-                                            <li><img class="img-fluid" src="/freshshop-master/assets/images/payment-icon/1.png" alt=""></li>
-                                            <li><img class="img-fluid" src="/freshshop-master/assets/images/payment-icon/2.png" alt=""></li>
-                                            <li><img class="img-fluid" src="/freshshop-master/assets/images/payment-icon/3.png" alt=""></li>
-                                            <li><img class="img-fluid" src="/freshshop-master/assets/images/payment-icon/5.png" alt=""></li>
-                                            <li><img class="img-fluid" src="/freshshop-master/assets/images/payment-icon/7.png" alt=""></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                            <hr class="mb-1"> </form>
-                    </div>
+            <?php elseif (empty($cart_items)): ?>
+                <div class="alert alert-warning">
+                    Your cart is empty.
                 </div>
-                <div class="col-sm-6 col-lg-6 mb-3">
-                    <div class="row">
-                        <div class="col-md-12 col-lg-12">
-                            <div class="shipping-method-box">
-                                <div class="title-left">
-                                    <h3>Shipping Method</h3>
-                                </div>
-                                <div class="mb-4">
-                                    <div class="custom-control custom-radio">
-                                        <input id="shippingOption1" name="shipping-option" class="custom-control-input" checked="checked" type="radio">
-                                        <label class="custom-control-label" for="shippingOption1">Standard Delivery</label> <span class="float-right font-weight-bold">FREE</span> </div>
-                                    <div class="ml-4 mb-2 small">(3-7 business days)</div>
-                                    <div class="custom-control custom-radio">
-                                        <input id="shippingOption2" name="shipping-option" class="custom-control-input" type="radio">
-                                        <label class="custom-control-label" for="shippingOption2">Express Delivery</label> <span class="float-right font-weight-bold">$10.00</span> </div>
-                                    <div class="ml-4 mb-2 small">(2-4 business days)</div>
-                                    <div class="custom-control custom-radio">
-                                        <input id="shippingOption3" name="shipping-option" class="custom-control-input" type="radio">
-                                        <label class="custom-control-label" for="shippingOption3">Next Business day</label> <span class="float-right font-weight-bold">$20.00</span> </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-12 col-lg-12">
-                            <div class="odr-box">
-                                <div class="title-left">
-                                    <h3>Shopping cart</h3>
-                                </div>
-                                <div class="rounded p-2 bg-light">
-                                    <div class="media mb-2 border-bottom">
-                                        <div class="media-body"> <a href="/freshshop-master/public/shop-detail.php"> Lorem ipsum dolor sit amet</a>
-                                            <div class="small text-muted">Price: $80.00 <span class="mx-2">|</span> Qty: 1 <span class="mx-2">|</span> Subtotal: $80.00</div>
-                                        </div>
-                                    </div>
-                                    <div class="media mb-2 border-bottom">
-                                        <div class="media-body"> <a href="/freshshop-master/public/shop-detail.php"> Lorem ipsum dolor sit amet</a>
-                                            <div class="small text-muted">Price: $60.00 <span class="mx-2">|</span> Qty: 1 <span class="mx-2">|</span> Subtotal: $60.00</div>
-                                        </div>
-                                    </div>
-                                    <div class="media mb-2">
-                                        <div class="media-body"> <a href="/freshshop-master/public/shop-detail.php"> Lorem ipsum dolor sit amet</a>
-                                            <div class="small text-muted">Price: $40.00 <span class="mx-2">|</span> Qty: 1 <span class="mx-2">|</span> Subtotal: $40.00</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-12 col-lg-12">
-                            <div class="order-box">
-                                <div class="title-left">
-                                    <h3>Your order</h3>
-                                </div>
-                                <div class="d-flex">
-                                    <div class="font-weight-bold">Product</div>
-                                    <div class="ml-auto font-weight-bold">Total</div>
-                                </div>
-                                <hr class="my-1">
-                                <div class="d-flex">
-                                    <h4>Sub Total</h4>
-                                    <div class="ml-auto font-weight-bold"> $ 440 </div>
-                                </div>
-                                <div class="d-flex">
-                                    <h4>Discount</h4>
-                                    <div class="ml-auto font-weight-bold"> $ 40 </div>
-                                </div>
-                                <hr class="my-1">
-                                <div class="d-flex">
-                                    <h4>Coupon Discount</h4>
-                                    <div class="ml-auto font-weight-bold"> $ 10 </div>
-                                </div>
-                                <div class="d-flex">
-                                    <h4>Tax</h4>
-                                    <div class="ml-auto font-weight-bold"> $ 2 </div>
-                                </div>
-                                <div class="d-flex">
-                                    <h4>Shipping Cost</h4>
-                                    <div class="ml-auto font-weight-bold"> Free </div>
-                                </div>
-                                <hr>
-                                <div class="d-flex gr-total">
-                                    <h5>Grand Total</h5>
-                                    <div class="ml-auto h5"> $ 388 </div>
-                                </div>
-                                <hr> </div>
-                        </div>
-                        <div class="col-12 d-flex shopping-box"> <a href="/freshshop-master/public/checkout.php" class="ml-auto btn hvr-hover">Place Order</a> </div>
-                    </div>
+                <div class="text-center my-5">
+                    <a href="<?= BASE_URL ?>/index.php" class="btn hvr-hover text-white">Back to Store</a>
                 </div>
-            </div>
+            <?php else: ?>
+                <?php if (isset($_SESSION['error'])): ?>
+                    <div class="alert alert-danger">
+                        <?= htmlspecialchars($_SESSION['error']); unset($_SESSION['error']); ?>
+                    </div>
+                <?php endif; ?>
 
+                <form action="<?= BASE_URL ?>/app/handlers/process_checkout.php" method="POST">
+                    <div class="row">
+                        <div class="col-sm-6 col-lg-6 mb-3">
+                            <div class="checkout-address">
+                                <div class="title-left">
+                                    <h3>Delivery Address</h3>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="address">Street Address (House number, Street) *</label>
+                                    <input type="text" class="form-control" id="address" name="address" placeholder="Enter delivery address" required>
+                                    <div class="invalid-feedback"> Please enter your delivery address. </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12 mb-3">
+                                        <label for="province">Province / City *</label>
+                                        <select class="wide w-100" id="province" name="province" required>
+                                            <option value="" data-display="Select">Loading...</option>
+                                        </select>
+                                        <div class="invalid-feedback"> Please select a Province/City. </div>
+                                    </div>
+                                    <div class="col-md-12 mb-3">
+                                        <label for="district">District *</label>
+                                        <select class="wide w-100" id="district" name="district" required disabled>
+                                            <option value="" data-display="Select">Select District...</option>
+                                        </select>
+                                        <div class="invalid-feedback"> Please select a District. </div>
+                                    </div>
+                                    <div class="col-md-12 mb-3">
+                                        <label for="ward">Ward / Commune *</label>
+                                        <select class="wide w-100" id="ward" name="ward" required disabled>
+                                            <option value="" data-display="Select">Select Ward...</option>
+                                        </select>
+                                        <div class="invalid-feedback"> Please select a Ward. </div>
+                                    </div>
+                                </div>
+                                <hr class="mb-4">
+                                <div class="title"> <span>Payment Method</span> </div>
+                                <div class="d-block my-3">
+                                    <div class="custom-control custom-radio mb-3 p-3 rounded border" style="background: <?= $is_cod_allowed ? '#fafbfc' : '#f8f9fa' ?>; border-color: #e2e8f0 !important;">
+                                        <input id="cod" name="paymentMethod" value="cod" type="radio" class="custom-control-input" <?= $is_cod_allowed ? 'checked' : 'disabled' ?> required>
+                                        <label class="custom-control-label font-weight-bold d-flex align-items-center" for="cod">
+                                            <i class="fas fa-money-bill-wave text-success mr-2 fa-lg"></i>
+                                            <span>Cash on Delivery (COD)</span>
+                                            <span class="badge badge-secondary ml-2" style="font-size:11px;">Max 5,000,000 VND</span>
+                                        </label>
+                                        <small class="text-muted d-block ml-4 mt-1">Pay with cash upon receiving goods at your canteen or facility.</small>
+                                        <div id="cod-limit-alert" class="alert alert-warning py-1 px-2 mt-2 mb-0 small ml-4 <?= $is_cod_allowed ? 'd-none' : '' ?>">
+                                            <i class="fas fa-exclamation-triangle mr-1"></i> <strong>Wholesale COD Policy:</strong> Orders exceeding 5,000,000 VND do not qualify for COD. Please select MoMo or contact hotline for bank wire transfer.
+                                        </div>
+                                    </div>
+
+                                    <div class="custom-control custom-radio p-3 rounded border" style="background: #fdf2f8; border-color: #fbcfe8 !important;">
+                                        <input id="momo" name="paymentMethod" value="momo" type="radio" class="custom-control-input" <?= !$is_cod_allowed ? 'checked' : '' ?> required>
+                                        <label class="custom-control-label font-weight-bold d-flex align-items-center" for="momo">
+                                            <span style="display:inline-flex; width:26px; height:26px; border-radius:6px; background:#a50064; color:#fff; align-items:center; justify-content:center; font-weight:900; font-size:11px; margin-right:8px; box-shadow: 0 2px 4px rgba(165,0,100,0.3);">MoMo</span>
+                                            <span style="color: #a50064;">MoMo E-Wallet (QR Code / ATM Napas / Visa)</span>
+                                            <span class="badge badge-warning text-dark ml-2" style="font-size: 10px;"><i class="fas fa-bolt"></i> Sandbox Instant Pay</span>
+                                        </label>
+                                        <small class="text-muted d-block ml-4 mt-1">Instant QR Code payment via MoMo E-Wallet or simulated ATM / Visa test cards.</small>
+                                    </div>
+                                </div>
+                                <hr class="mb-1">
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-lg-6 mb-3">
+                            <div class="row">
+                                <div class="col-md-12 col-lg-12">
+                                    <div class="odr-box">
+                                        <div class="title-left">
+                                            <h3>Your Cart</h3>
+                                        </div>
+                                        <div class="rounded p-2 bg-light">
+                                            <?php foreach ($cart_items as $item): ?>
+                                                <div class="media mb-2 border-bottom">
+                                                    <div class="media-body"> 
+                                                        <a href="<?= BASE_URL ?>/public/shop-detail.php?id=<?= $item['id'] ?>" class="font-weight-bold"> <?= htmlspecialchars($item['name']) ?></a>
+                                                        <span class="badge badge-info ml-1"><?= htmlspecialchars($item['unit_label']) ?></span>
+                                                        <div class="small text-muted mt-1">Unit Price: <?= format_vnd($item['unit_price']) ?> <span class="mx-2">|</span> Qty: <?= $item['cart_qty'] ?> <?= htmlspecialchars($item['unit_name']) ?> <span class="mx-2">|</span> Total: <?= format_vnd($item['final_total']) ?></div>
+                                                    </div>
+                                                </div>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-12 col-lg-12">
+                                    <div class="order-box">
+                                        <div class="title-left">
+                                            <h3>Order Summary</h3>
+                                        </div>
+                                        <div class="d-flex">
+                                            <h4>Sub Total</h4>
+                                            <div class="ml-auto font-weight-bold"><?= format_vnd($sub_total) ?></div>
+                                        </div>
+                                        <div class="d-flex text-success">
+                                            <h4>Bulk Discount</h4>
+                                            <div class="ml-auto font-weight-bold">-<?= format_vnd($bulk_discount) ?></div>
+                                        </div>
+                                        <div class="d-flex text-info">
+                                            <h4>Shipping Fee (GHN)</h4>
+                                            <div class="ml-auto font-weight-bold" id="shipping-fee">Calculating...</div>
+                                        </div>
+                                        <hr>
+                                        <div class="d-flex gr-total">
+                                            <h5>Grand Total</h5>
+                                            <div class="ml-auto h5" id="grand-total" data-subtotal="<?= $grand_total ?>"><?= format_vnd($grand_total) ?></div>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                </div>
+                                <div class="col-12 d-flex shopping-box">
+                                    <input type="hidden" name="province_name" id="province_name">
+                                    <input type="hidden" name="district_name" id="district_name">
+                                    <input type="hidden" name="ward_name" id="ward_name">
+                                    <input type="hidden" name="to_district_id" id="to_district_id">
+                                    <input type="hidden" name="to_ward_code" id="to_ward_code">
+                                    <input type="hidden" name="shipping_fee" id="shipping_fee_input" value="0">
+                                    <button type="submit" class="ml-auto btn hvr-hover text-white">Confirm Order</button> 
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            <?php endif; ?>
         </div>
     </div>
     <!-- End Cart -->
 
 <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; }
 include INCLUDES_PATH . '/footer.php';
 ?>
+<script>
+$(document).ready(function() {
+    const formatCurrency = (amount) => {
+        return amount.toLocaleString('vi-VN', {style : 'currency', currency : 'VND'});
+    };
 
+    // Load Provinces
+    $.get('<?= BASE_URL ?>/app/ajax/get_ghn_address.php?action=province', function(response) {
+        let select = $('#province');
+        select.empty();
+        select.append('<option value="" data-display="Select">Select Province/City...</option>');
+        if (response.code === 200 && response.data) {
+            response.data.forEach(function(item) {
+                select.append('<option value="'+item.ProvinceID+'">'+item.ProvinceName+'</option>');
+            });
+        }
+        if ($.fn.niceSelect) select.niceSelect('update');
+    }, 'json');
+
+    // On Province Change
+    $('#province').on('change', function() {
+        let province_id = $(this).val();
+        let distSelect = $('#district');
+        let wardSelect = $('#ward');
+        
+        distSelect.empty().append('<option value="">Select District...</option>').prop('disabled', true);
+        wardSelect.empty().append('<option value="">Select Ward...</option>').prop('disabled', true);
+        $('#shipping-fee').text('Calculating...');
+        updateTotal(0);
+
+        if (province_id) {
+            $('#province_name').val($(this).find('option:selected').text());
+            $.get('<?= BASE_URL ?>/app/ajax/get_ghn_address.php?action=district&province_id=' + province_id, function(response) {
+                if (response.code === 200 && response.data) {
+                    response.data.forEach(function(item) {
+                        distSelect.append('<option value="'+item.DistrictID+'">'+item.DistrictName+'</option>');
+                    });
+                    distSelect.prop('disabled', false);
+                }
+                if ($.fn.niceSelect) {
+                    distSelect.niceSelect('update');
+                    wardSelect.niceSelect('update');
+                }
+            }, 'json');
+        } else {
+            if ($.fn.niceSelect) {
+                distSelect.niceSelect('update');
+                wardSelect.niceSelect('update');
+            }
+        }
+    });
+
+    // On District Change
+    $('#district').on('change', function() {
+        let district_id = $(this).val();
+        let wardSelect = $('#ward');
+        
+        wardSelect.empty().append('<option value="">Select Ward...</option>').prop('disabled', true);
+        $('#shipping-fee').text('Calculating...');
+        updateTotal(0);
+
+        if (district_id) {
+            $('#district_name').val($(this).find('option:selected').text());
+            $('#to_district_id').val(district_id);
+            $.get('<?= BASE_URL ?>/app/ajax/get_ghn_address.php?action=ward&district_id=' + district_id, function(response) {
+                if (response.code === 200 && response.data) {
+                    response.data.forEach(function(item) {
+                        wardSelect.append('<option value="'+item.WardCode+'">'+item.WardName+'</option>');
+                    });
+                    wardSelect.prop('disabled', false);
+                }
+                if ($.fn.niceSelect) {
+                    wardSelect.niceSelect('update');
+                }
+            }, 'json');
+        } else {
+            if ($.fn.niceSelect) wardSelect.niceSelect('update');
+        }
+    });
+
+    // On Ward Change -> Calculate Fee
+    $('#ward').on('change', function() {
+        let to_district_id = $('#district').val();
+        let to_ward_code = $(this).val();
+
+        if (to_district_id && to_ward_code) {
+            $('#ward_name').val($(this).find('option:selected').text());
+            $('#to_ward_code').val(to_ward_code);
+            $('#shipping-fee').text('Loading...');
+            $.post('<?= BASE_URL ?>/app/ajax/calculate_ghn_fee.php', {
+                to_district_id: to_district_id,
+                to_ward_code: to_ward_code
+            }, function(response) {
+                if (response.code === 200 && response.data) {
+                    let fee = response.data.total;
+                    $('#shipping-fee').text(formatCurrency(fee));
+                    $('#shipping_fee_input').val(fee);
+                    updateTotal(fee);
+                } else {
+                    $('#shipping-fee').text('Fee calculation error');
+                    alert(response.message || 'GHN shipping fee calculation error');
+                }
+            }, 'json').fail(function() {
+                $('#shipping-fee').text('Connection error');
+            });
+        }
+    });
+
+    function updateTotal(fee_vnd) {
+        let subtotal_vnd = parseInt($('#grand-total').data('subtotal'));
+        let final_total_vnd = subtotal_vnd + fee_vnd;
+        $('#grand-total').text(formatCurrency(final_total_vnd));
+
+        // Enforce 5,000,000 VND limit for COD dynamically
+        if (final_total_vnd > 5000000) {
+            $('#cod').prop('disabled', true).prop('checked', false);
+            $('#momo').prop('checked', true);
+            $('#cod-limit-alert').removeClass('d-none');
+        } else {
+            $('#cod').prop('disabled', false);
+            $('#cod-limit-alert').addClass('d-none');
+        }
+    }
+});
+</script>

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; }
 session_start();
 if (!isset($_SESSION['user_id'])) {
@@ -28,8 +28,8 @@ include INCLUDES_PATH . '/header.php';
                 <div class="col-lg-12">
                     <h2>Security Settings</h2>
                     <ul class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="/freshshop-master/index.php">Home</a></li>
-                        <li class="breadcrumb-item"><a href="/freshshop-master/public/my-account.php">Account</a></li>
+                        <li class="breadcrumb-item"><a href="<?= BASE_URL ?>/index.php">Home</a></li>
+                        <li class="breadcrumb-item"><a href="<?= BASE_URL ?>/public/my-account.php">Account</a></li>
                         <li class="breadcrumb-item active">Security Settings</li>
                     </ul>
                 </div>
@@ -45,42 +45,34 @@ include INCLUDES_PATH . '/header.php';
                 <div class="col-lg-5 col-md-6 mb-4">
                     <div class="auth-card">
                         <div class="auth-card-header">
-                            <div class="auth-icon" style="background:#b0b435;">
+                            <div class="auth-icon" style="background:#0b74e5;">
                                 <i class="fa fa-user-edit"></i>
                             </div>
                             <h3>Profile Information</h3>
                             <p>Update your account's profile information and email address.</p>
                         </div>
 
-                        <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } if (isset($_SESSION['profile_errors'])): ?>
+                        <?php if (isset($_SESSION['profile_errors'])): ?>
                             <div class="alert alert-danger">
                                 <ul class="mb-0">
-                                    <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } foreach ($_SESSION['profile_errors'] as $e): ?>
+                                    <?php foreach ($_SESSION['profile_errors'] as $e): ?>
                                         <li><?= htmlspecialchars($e) ?></li>
-                                    <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endforeach; ?>
+                                    <?php endforeach; ?>
                                 </ul>
                             </div>
-                            <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } unset($_SESSION['profile_errors']); ?>
-                        <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endif; ?>
+                            <?php unset($_SESSION['profile_errors']); ?>
+                        <?php endif; ?>
 
-                        <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } if (isset($_SESSION['profile_success'])): ?>
+                        <?php if (isset($_SESSION['profile_success'])): ?>
                             <div class="alert alert-success">
                                 <ul class="mb-0">
                                     <li><?= htmlspecialchars($_SESSION['profile_success']) ?></li>
                                 </ul>
                             </div>
-                            <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } unset($_SESSION['profile_success']); ?>
-                        <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endif; ?>
+                            <?php unset($_SESSION['profile_success']); ?>
+                        <?php endif; ?>
 
-                        <form method="post" action="/freshshop-master/app/handlers/update_profile.php" class="auth-form">
+                        <form method="post" action="<?= BASE_URL ?>/app/handlers/update_profile.php" class="auth-form">
                             <div class="form-group">
                                 <label for="name"><i class="fa fa-user"></i> Name</label>
                                 <input type="text" class="form-control" id="name" name="name" value="<?= htmlspecialchars($user_name) ?>" required>
@@ -108,7 +100,7 @@ if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endif
                 <div class="col-lg-5 col-md-6 mb-4">
                     <div class="auth-card">
                         <div class="auth-card-header" style="cursor:pointer;" onclick="togglePasswordForm()">
-                            <div class="auth-icon" style="background:#b0b435;">
+                            <div class="auth-icon" style="background:#0b74e5;">
                                 <i class="fa fa-lock"></i>
                             </div>
                             <h3>Update Password <i id="pw-toggle-icon" class="fa fa-chevron-down" style="font-size:14px;margin-left:8px;transition:transform 0.3s;"></i></h3>
@@ -116,35 +108,27 @@ if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endif
                         </div>
 
                         <div id="password-form-wrapper" style="display:none;overflow:hidden;transition:max-height 0.4s ease;">
-                        <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } if (isset($_SESSION['password_errors'])): ?>
+                        <?php if (isset($_SESSION['password_errors'])): ?>
                             <div class="alert alert-danger">
                                 <ul class="mb-0">
-                                    <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } foreach ($_SESSION['password_errors'] as $e): ?>
+                                    <?php foreach ($_SESSION['password_errors'] as $e): ?>
                                         <li><?= htmlspecialchars($e) ?></li>
-                                    <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endforeach; ?>
+                                    <?php endforeach; ?>
                                 </ul>
                             </div>
-                            <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } unset($_SESSION['password_errors']); ?>
-                        <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endif; ?>
+                            <?php unset($_SESSION['password_errors']); ?>
+                        <?php endif; ?>
 
-                        <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } if (isset($_SESSION['password_success'])): ?>
+                        <?php if (isset($_SESSION['password_success'])): ?>
                             <div class="alert alert-success">
                                 <ul class="mb-0">
                                     <li><?= htmlspecialchars($_SESSION['password_success']) ?></li>
                                 </ul>
                             </div>
-                            <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } unset($_SESSION['password_success']); ?>
-                        <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endif; ?>
+                            <?php unset($_SESSION['password_success']); ?>
+                        <?php endif; ?>
 
-                        <form method="post" action="/freshshop-master/app/handlers/change_password.php" class="auth-form">
+                        <form method="post" action="<?= BASE_URL ?>/app/handlers/change_password.php" class="auth-form">
                             <div class="form-group">
                                 <label for="current_password"><i class="fa fa-key"></i> Current Password</label>
                                 <input type="password" class="form-control" id="current_password" name="current_password" required>
@@ -166,11 +150,9 @@ if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endif
 
                     <script>
                     // Auto-open if there are error/success messages from a previous submit
-                    <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } if (isset($_SESSION['password_errors']) || isset($_SESSION['password_success'])): ?>
+                    <?php if (isset($_SESSION['password_errors']) || isset($_SESSION['password_success'])): ?>
                     document.addEventListener('DOMContentLoaded', function(){ togglePasswordForm(); });
-                    <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endif; ?>
+                    <?php endif; ?>
 
                     function togglePasswordForm() {
                         var wrapper = document.getElementById('password-form-wrapper');
@@ -189,6 +171,7 @@ if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endif
         </div>
     </div>
 
-<?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } include INCLUDES_PATH . '/footer.php'; ?>
+<?php include INCLUDES_PATH . '/footer.php'; ?>
+
+
 

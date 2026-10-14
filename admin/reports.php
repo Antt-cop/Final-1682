@@ -16,6 +16,6 @@ include __DIR__ . '/header.php';
     </div>
 </div>
 
-<?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } include __DIR__ . '/footer.php'; ?>
+<?php include __DIR__ . '/footer.php'; ?>
+
 

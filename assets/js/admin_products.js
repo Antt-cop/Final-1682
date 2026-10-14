@@ -8,7 +8,7 @@ function resetForm() {
 
 function editProduct(id) {
     $.ajax({
-        url: 'php/admin_products_handler.php',
+        url: '../app/handlers/admin_products.php',
         type: 'GET',
         data: { action: 'get', id: id },
         success: function(response) {
@@ -46,7 +46,7 @@ function editProduct(id) {
 function deleteProduct(id) {
     if(confirm("Are you sure you want to delete this product? This action cannot be undone.")) {
         $.ajax({
-            url: 'php/admin_products_handler.php',
+            url: '../app/handlers/admin_products.php',
             type: 'POST',
             data: { action: 'delete', id: id },
             success: function(response) {

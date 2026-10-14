@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; }
 $page_name = 'smtp_settings';
 $page_title = 'SMTP Settings - Admin Panel';
@@ -34,9 +34,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($action === 'test') {
         $test_email = $_POST['test_email'] ?? '';
         if (filter_var($test_email, FILTER_VALIDATE_EMAIL)) {
-            require_once __DIR__ . '/php/PHPMailer/Exception.php';
-            require_once __DIR__ . '/php/PHPMailer/PHPMailer.php';
-            require_once __DIR__ . '/php/PHPMailer/SMTP.php';
+            require_once __DIR__ . '/../app/PHPMailer/Exception.php';
+            require_once __DIR__ . '/../app/PHPMailer/PHPMailer.php';
+            require_once __DIR__ . '/../app/PHPMailer/SMTP.php';
 
             $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
             try {
@@ -105,16 +105,14 @@ if ($res && $res->num_rows > 0) {
 
 <div class="row">
     <div class="col-lg-12">
-        <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } if ($message): ?>
+        <?php if ($message): ?>
             <div class="alert alert-<?= $msg_type ?> alert-dismissible fade show" role="alert">
                 <?= htmlspecialchars($message) ?>
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-        <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endif; ?>
+        <?php endif; ?>
 
         <div class="card mb-4">
             <div class="card-header bg-light">
@@ -122,7 +120,7 @@ if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endif
                 <small class="text-muted">Configure the SMTP server to send notification emails from the system.</small>
             </div>
             <div class="card-body">
-                <form method="post" action="admin_smtp_settings.php" id="smtpForm">
+                <form method="post" action="smtp_settings.php" id="smtpForm">
                     <input type="hidden" name="action" id="formAction" value="update">
                     
                     <div class="row">
@@ -187,7 +185,7 @@ if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endif
                                     <div class="input-group-prepend">
                                         <span class="input-group-text"><i class="fas fa-lock"></i></span>
                                     </div>
-                                    <input type="password" class="form-control" id="smtp_password" name="smtp_password" value="<?= htmlspecialchars($settings['smtp_password']) ?>" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢">
+                                    <input type="password" class="form-control" id="smtp_password" name="smtp_password" value="<?= htmlspecialchars($settings['smtp_password']) ?>" placeholder="••••••••••••••••">
                                     <div class="input-group-append">
                                         <button class="btn btn-outline-secondary" type="button" id="togglePassword"><i class="far fa-eye"></i></button>
                                     </div>
@@ -250,7 +248,7 @@ if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endif
 
                     <div class="d-flex mt-4">
                         <button type="button" class="btn btn-primary mr-2" onclick="submitForm('update')"><i class="fas fa-save"></i> Update Settings</button>
-                        <a href="/freshshop-master/admin/dashboard.php" class="btn btn-secondary">Cancel</a>
+                        <a href="<?= BASE_URL ?>/admin/dashboard.php" class="btn btn-secondary">Cancel</a>
                     </div>
                 </form>
             </div>
@@ -291,6 +289,7 @@ function submitForm(actionType) {
 }
 </script>
 
-<?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } include __DIR__ . '/footer.php'; ?>
+<?php include __DIR__ . '/footer.php'; ?>
+
+
 

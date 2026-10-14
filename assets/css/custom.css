@@ -2,6 +2,13 @@
 /** ADD YOUR AWESOME CODES HERE **/
 
 /* ===================================================
+   SLIDER FIX
+   =================================================== */
+#slides-shop, .cover-slides {
+    position: relative;
+}
+
+/* ===================================================
    TOP BAR - Right column our-link override
    =================================================== */
 
@@ -368,3 +375,132 @@
     text-align: center;
     font-weight: 500;
 }
+
+/* ===================================================
+   PRODUCT GRID — LAYOUT FIX
+   Đảm bảo các card sản phẩm thẳng hàng, không bị lệch
+   =================================================== */
+
+/* Row chứa các sản phẩm dùng flexbox thay vì float */
+.special-list {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+/* Mỗi card sản phẩm dùng flex column để phần text luôn ở đáy */
+.special-list .special-grid {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 30px;
+}
+
+/* Card bên trong chiếm hết chiều cao cột */
+.special-list .products-single {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100%;
+    margin-bottom: 0;
+}
+
+/* Vùng ảnh: cố định chiều cao, ảnh tự co giãn vừa khung */
+.products-single .box-img-hover {
+    height: 220px;
+    overflow: hidden;
+    position: relative;
+    background: #fafafa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.products-single .box-img-hover img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.products-single:hover .box-img-hover img {
+    transform: scale(1.05);
+}
+
+/* Vùng text: flex-grow để luôn đẩy phần giá xuống đáy */
+.products-single .why-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 90px;
+}
+
+/* Tên sản phẩm: tối đa 2 dòng, không làm lệch layout */
+.why-text h4 {
+    font-size: 14px;
+    font-weight: 700;
+    padding-bottom: 10px;
+    margin: 0;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    min-height: 40px;
+    line-height: 1.4;
+}
+
+/* Giá: luôn ở đáy card */
+.why-text h5 {
+    margin-top: auto;
+}
+
+/* Responsive: 2 cột trên mobile */
+@media (max-width: 767px) {
+    .products-single .box-img-hover {
+        height: 170px;
+    }
+}
+
+/* ===================================================
+   MODERN BACK TO TOP BUTTON (BLUE GRADIENT)
+   =================================================== */
+#back-to-top {
+    position: fixed !important;
+    bottom: 24px !important;
+    right: 24px !important;
+    z-index: 9999 !important;
+    width: 48px !important;
+    height: 48px !important;
+    text-align: center !important;
+    background: linear-gradient(135deg, #1084f7, #0b74e5) !important;
+    color: #ffffff !important;
+    border-radius: 50% !important;
+    box-shadow: 0 4px 18px rgba(11, 116, 229, 0.45) !important;
+    cursor: pointer !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    border: 2px solid #ffffff !important;
+    text-decoration: none !important;
+    padding: 0 !important;
+    line-height: 44px !important;
+}
+
+#back-to-top:hover {
+    background: linear-gradient(135deg, #0056b3, #004596) !important;
+    color: #ffffff !important;
+    transform: translateY(-4px) scale(1.08) !important;
+    box-shadow: 0 8px 24px rgba(11, 116, 229, 0.6) !important;
+}
+
+#back-to-top i {
+    color: #ffffff !important;
+    font-size: 18px !important;
+    line-height: 44px !important;
+    display: inline-block !important;
+    transition: transform 0.2s ease !important;
+}
+
+#back-to-top:hover i {
+    transform: translateY(-2px) !important;
+}
+

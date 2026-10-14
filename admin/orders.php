@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; }
 $page_name = 'orders';
 $page_title = 'Manage Orders - Admin Panel';
@@ -37,16 +37,14 @@ if ($res) {
     <h2>Manage Orders</h2>
 </div>
 
-<?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } if(isset($_GET['success'])): ?>
+<?php if(isset($_GET['success'])): ?>
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         Order successfully <?= htmlspecialchars($_GET['success']) ?>!
         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
             <span aria-hidden="true">&times;</span>
         </button>
     </div>
-<?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endif; ?>
+<?php endif; ?>
 
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
@@ -59,16 +57,15 @@ if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endif
                 <option value="shipped" <?= $status_filter == 'shipped' ? 'selected' : '' ?>>Shipped</option>
                 <option value="delivered" <?= $status_filter == 'delivered' ? 'selected' : '' ?>>Delivered</option>
                 <option value="cancelled" <?= $status_filter == 'cancelled' ? 'selected' : '' ?>>Cancelled</option>
+                <option value="returned" <?= $status_filter == 'returned' ? 'selected' : '' ?>>Returned</option>
             </select>
             <div class="input-group">
                 <input type="text" name="search" class="form-control form-control-sm" placeholder="Search order/customer..." value="<?= htmlspecialchars($search) ?>">
                 <div class="input-group-append">
                     <button class="btn btn-sm btn-secondary" type="submit"><i class="fas fa-search"></i></button>
-                    <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } if($search || $status_filter): ?>
-                        <a href="admin_orders.php" class="btn btn-sm btn-light"><i class="fas fa-times"></i></a>
-                    <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endif; ?>
+                    <?php if($search || $status_filter): ?>
+                        <a href="orders.php" class="btn btn-sm btn-light"><i class="fas fa-times"></i></a>
+                    <?php endif; ?>
                 </div>
             </div>
         </form>
@@ -88,51 +85,48 @@ if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endif
                     </tr>
                 </thead>
                 <tbody>
-                    <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } if(empty($orders)): ?>
+                    <?php if(empty($orders)): ?>
                         <tr><td colspan="7" class="text-center py-4">No orders found.</td></tr>
-                    <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } else: ?>
-                        <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } foreach($orders as $o): ?>
+                    <?php else: ?>
+                        <?php foreach($orders as $o): ?>
                             <tr>
                                 <td><strong>#<?= $o['id'] ?></strong></td>
                                 <td><?= htmlspecialchars($o['username'] ?? 'Unknown') ?><br><small class="text-muted"><?= htmlspecialchars($o['email'] ?? '') ?></small></td>
-                                <td>$<?= number_format($o['total_amount'], 2) ?></td>
+                                <td><?= format_vnd($o['total_amount']) ?></td>
                                 <td>
-                                    <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } if($o['payment_status'] == 'paid'): ?>
+                                    <?php if($o['payment_status'] == 'paid'): ?>
                                         <span class="badge badge-admin badge-success"><i class="fas fa-check"></i> Paid</span>
-                                    <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } elseif($o['payment_status'] == 'refunded'): ?>
+                                    <?php elseif($o['payment_status'] == 'refunded'): ?>
                                         <span class="badge badge-admin badge-dark">Refunded</span>
-                                    <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } else: ?>
+                                    <?php else: ?>
                                         <span class="badge badge-admin badge-warning text-dark">Unpaid</span>
-                                    <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endif; ?>
+                                    <?php endif; ?>
                                 </td>
                                 <td>
-                                    <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; }
-                                    $status_class = 'badge-secondary';
-                                    if ($o['status'] == 'pending') $status_class = 'badge-warning';
-                                    elseif ($o['status'] == 'processing') $status_class = 'badge-info';
-                                    elseif ($o['status'] == 'shipped') $status_class = 'badge-primary';
-                                    elseif ($o['status'] == 'delivered') $status_class = 'badge-success';
-                                    elseif ($o['status'] == 'cancelled') $status_class = 'badge-danger';
-                                    ?>
-                                    <span class="badge badge-admin <?= $status_class ?>"><?= ucfirst($o['status']) ?></span>
+                                    <select class="custom-select custom-select-sm" onchange="updateStatus(<?= $o['id'] ?>, this.value)" style="width: auto; min-width: 100px;">
+                                        <option value="pending" <?= $o['status'] == 'pending' ? 'selected' : '' ?>>Pending</option>
+                                        <option value="processing" <?= $o['status'] == 'processing' ? 'selected' : '' ?>>Processing</option>
+                                        <option value="shipped" <?= $o['status'] == 'shipped' ? 'selected' : '' ?>>Shipped</option>
+                                        <option value="delivered" <?= $o['status'] == 'delivered' ? 'selected' : '' ?>>Delivered</option>
+                                        <option value="cancelled" <?= $o['status'] == 'cancelled' ? 'selected' : '' ?>>Cancelled</option>
+                                        <option value="returned" <?= $o['status'] == 'returned' ? 'selected' : '' ?>>Returned</option>
+                                    </select>
                                 </td>
-                                <td><?= date('M d, Y', strtotime($o['created_at'])) ?></td>
+                                <td><?= date('d/m/Y H:i', strtotime($o['created_at'])) ?></td>
                                 <td>
-                                    <button class="btn btn-sm btn-info" onclick="viewOrder(<?= $o['id'] ?>)" title="View Details"><i class="fas fa-eye"></i></button>
+                                    <?php if ($o['tracking_code']): ?>
+                                        <a href="https://tracking.ghn.dev/?order_code=<?= htmlspecialchars($o['tracking_code']) ?>" target="_blank" class="badge badge-info d-block mb-1"><i class="fas fa-truck"></i> <?= htmlspecialchars($o['tracking_code']) ?></a>
+                                    <?php elseif ($o['status'] === 'processing'): ?>
+                                        <button class="btn btn-xs btn-warning mb-1" onclick="pushToGHN(<?= $o['id'] ?>)">
+                                            <i class="fas fa-paper-plane"></i> Push GHN
+                                        </button>
+                                    <?php endif; ?>
+                                    <button class="btn btn-sm btn-info" onclick="viewOrder(<?= $o['id'] ?>)" title="Details"><i class="fas fa-eye"></i></button>
+                                    <a href="invoice.php?id=<?= $o['id'] ?>" target="_blank" class="btn btn-sm btn-outline-secondary" title="Invoice"><i class="fas fa-file-invoice"></i></a>
                                 </td>
                             </tr>
-                        <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endforeach; ?>
-                    <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endif; ?>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>
@@ -156,9 +150,73 @@ if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endif
     </div>
 </div>
 
+<!-- Tracking Code Modal -->
+<div class="modal fade" id="trackingModal" tabindex="-1" role="dialog" aria-labelledby="trackingModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white;">
+                <h5 class="modal-title" id="trackingModalLabel">
+                    <i class="fas fa-truck mr-2"></i> Enter GHN Tracking Code
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body py-4">
+                <input type="hidden" id="trackingOrderId">
+                <p class="text-muted mb-3">
+                    <i class="fas fa-info-circle mr-1 text-info"></i>
+                    The order will be moved to <strong>Shipped</strong>. Please enter the tracking code so the customer can track it.
+                </p>
+                <div class="form-group mb-0">
+                    <label for="trackingCodeInput" class="font-weight-bold">Tracking Code <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="fas fa-barcode"></i></span>
+                        </div>
+                        <input type="text" id="trackingCodeInput" class="form-control form-control-lg"
+                               placeholder="Example: GHNXXXXXX" autocomplete="off" onkeydown="if(event.key==='Enter') submitTrackingCode()">
+                        <div class="invalid-feedback">Please enter the tracking code.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <i class="fas fa-times mr-1"></i> Cancel
+                </button>
+                <button type="button" class="btn btn-success" onclick="submitTrackingCode()">
+                    <i class="fas fa-check mr-1"></i> Confirm & Update
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function pushToGHN(orderId) {
+    if (!confirm('Push order #' + orderId + ' to GHN for delivery?')) return;
+    $.post('<?= BASE_URL ?>/app/handlers/admin_orders.php', {
+        action: 'push_ghn',
+        id: orderId
+    }, function(response) {
+        try {
+            var res = JSON.parse(response);
+            if (res.status === 'success') {
+                alert('✅ Successfully pushed to GHN! Tracking code: ' + res.tracking_code);
+                location.reload();
+            } else {
+                alert('❌ GHN Error: ' + res.message);
+            }
+        } catch(e) {
+            alert('Server connection error.');
+        }
+    });
+}
+</script>
 <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; }
 $extra_scripts = ['js/admin_orders.js'];
 include __DIR__ . '/footer.php';
 ?>
+
+
 

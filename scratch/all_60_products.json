@@ -1,0 +1,602 @@
+[
+    {
+        "index": 1,
+        "category_id": "1",
+        "name": "Trà Xanh Không Độ 500ml",
+        "image_url": "images\/bev-001-main.png",
+        "unit_type": "Chai",
+        "sku": "BEV-GRT-001",
+        "box_unit": "Thùng",
+        "conversion_rate": "24"
+    },
+    {
+        "index": 2,
+        "category_id": "1",
+        "name": "Nước Ngọt Coca-Cola 320ml",
+        "image_url": "images\/bev-002-main.png",
+        "unit_type": "Chai",
+        "sku": "BEV-GRT-002",
+        "box_unit": "Thùng",
+        "conversion_rate": "24"
+    },
+    {
+        "index": 3,
+        "category_id": "1",
+        "name": "Nước Ngọt Pepsi 320ml",
+        "image_url": "https:\/\/example.com\/images\/bev-003-main.jpg",
+        "unit_type": "Chai",
+        "sku": "BEV-GRT-003",
+        "box_unit": "Thùng",
+        "conversion_rate": "24"
+    },
+    {
+        "index": 4,
+        "category_id": "1",
+        "name": "Trà Sữa Macchiato 250ml",
+        "image_url": "https:\/\/example.com\/images\/bev-004-main.jpg",
+        "unit_type": "Chai",
+        "sku": "BEV-GRT-004",
+        "box_unit": "Thùng",
+        "conversion_rate": "24"
+    },
+    {
+        "index": 5,
+        "category_id": "1",
+        "name": "Nước Ép Trái Cây Vfresh 1L",
+        "image_url": "https:\/\/example.com\/images\/bev-005-main.jpg",
+        "unit_type": "Chai",
+        "sku": "BEV-GRT-005",
+        "box_unit": "Thùng",
+        "conversion_rate": "24"
+    },
+    {
+        "index": 6,
+        "category_id": "1",
+        "name": "Nước Suối Aquafina 500ml",
+        "image_url": "https:\/\/example.com\/images\/bev-006-main.jpg",
+        "unit_type": "Chai",
+        "sku": "BEV-GRT-006",
+        "box_unit": "Thùng",
+        "conversion_rate": "24"
+    },
+    {
+        "index": 7,
+        "category_id": "1",
+        "name": "Nước Suối Dasani 500ml",
+        "image_url": "https:\/\/example.com\/images\/bev-007-main.jpg",
+        "unit_type": "Chai",
+        "sku": "BEV-GRT-007",
+        "box_unit": "Thùng",
+        "conversion_rate": "24"
+    },
+    {
+        "index": 8,
+        "category_id": "1",
+        "name": "Cà Phê Sữa Đá MacCoffee 24g",
+        "image_url": "https:\/\/example.com\/images\/bev-008-main.jpg",
+        "unit_type": "Gói",
+        "sku": "BEV-GRT-008",
+        "box_unit": "Thùng",
+        "conversion_rate": "24"
+    },
+    {
+        "index": 9,
+        "category_id": "1",
+        "name": "Sữa Tươi Tiệt Trùng Vinamilk 180ml",
+        "image_url": "https:\/\/example.com\/images\/bev-009-main.jpg",
+        "unit_type": "Chai",
+        "sku": "BEV-GRT-009",
+        "box_unit": "Thùng",
+        "conversion_rate": "24"
+    },
+    {
+        "index": 10,
+        "category_id": "1",
+        "name": "Sữa Chua Uống Yomost 170ml",
+        "image_url": "https:\/\/example.com\/images\/bev-010-main.jpg",
+        "unit_type": "Chai",
+        "sku": "BEV-GRT-010",
+        "box_unit": "Thùng",
+        "conversion_rate": "24"
+    },
+    {
+        "index": 11,
+        "category_id": "1",
+        "name": "Nước Tăng Lực Red Bull 250ml",
+        "image_url": "https:\/\/example.com\/images\/bev-011-main.jpg",
+        "unit_type": "Chai",
+        "sku": "BEV-GRT-011",
+        "box_unit": "Thùng",
+        "conversion_rate": "24"
+    },
+    {
+        "index": 12,
+        "category_id": "1",
+        "name": "Nước Tăng Lực Sting 330ml",
+        "image_url": "https:\/\/example.com\/images\/bev-012-main.jpg",
+        "unit_type": "Chai",
+        "sku": "BEV-GRT-012",
+        "box_unit": "Thùng",
+        "conversion_rate": "24"
+    },
+    {
+        "index": 13,
+        "category_id": "1",
+        "name": "Trà Ô Long Tea Plus 320ml",
+        "image_url": "https:\/\/example.com\/images\/bev-013-main.jpg",
+        "unit_type": "Chai",
+        "sku": "BEV-GRT-013",
+        "box_unit": "Thùng",
+        "conversion_rate": "24"
+    },
+    {
+        "index": 14,
+        "category_id": "1",
+        "name": "Nước Cam Ép Splash 320ml",
+        "image_url": "https:\/\/example.com\/images\/bev-014-main.jpg",
+        "unit_type": "Chai",
+        "sku": "BEV-GRT-014",
+        "box_unit": "Thùng",
+        "conversion_rate": "24"
+    },
+    {
+        "index": 15,
+        "category_id": "1",
+        "name": "Nước Khoáng Lavie 500ml",
+        "image_url": "https:\/\/example.com\/images\/bev-015-main.jpg",
+        "unit_type": "Chai",
+        "sku": "BEV-GRT-015",
+        "box_unit": "Thùng",
+        "conversion_rate": "24"
+    },
+    {
+        "index": 16,
+        "category_id": "2",
+        "name": "Cá Ngừ Ngâm Dầu Hạ Long 175g",
+        "image_url": "images\/can-001-main.png",
+        "unit_type": "Hộp",
+        "sku": "CAN-FOO-001",
+        "box_unit": "Thùng",
+        "conversion_rate": "48"
+    },
+    {
+        "index": 17,
+        "category_id": "2",
+        "name": "Thịt Heo Hầm Đồ Hộp Vissan 150g",
+        "image_url": "https:\/\/example.com\/images\/can-002-main.jpg",
+        "unit_type": "Hộp",
+        "sku": "CAN-FOO-002",
+        "box_unit": "Thùng",
+        "conversion_rate": "48"
+    },
+    {
+        "index": 18,
+        "category_id": "2",
+        "name": "Pate Gan Heo Hạ Long 90g",
+        "image_url": "https:\/\/example.com\/images\/can-003-main.jpg",
+        "unit_type": "Hộp",
+        "sku": "CAN-FOO-003",
+        "box_unit": "Thùng",
+        "conversion_rate": "48"
+    },
+    {
+        "index": 19,
+        "category_id": "2",
+        "name": "Ngô Ngọt Đóng Hộp 425g",
+        "image_url": "https:\/\/example.com\/images\/can-004-main.jpg",
+        "unit_type": "Hộp",
+        "sku": "CAN-FOO-004",
+        "box_unit": "Thùng",
+        "conversion_rate": "48"
+    },
+    {
+        "index": 20,
+        "category_id": "2",
+        "name": "Đậu Nành Sốt Cà Chua 425g",
+        "image_url": "https:\/\/example.com\/images\/can-005-main.jpg",
+        "unit_type": "Hộp",
+        "sku": "CAN-FOO-005",
+        "box_unit": "Thùng",
+        "conversion_rate": "48"
+    },
+    {
+        "index": 21,
+        "category_id": "2",
+        "name": "Cá Nục Sốt Cà Chua 155g",
+        "image_url": "https:\/\/example.com\/images\/can-006-main.jpg",
+        "unit_type": "Hộp",
+        "sku": "CAN-FOO-006",
+        "box_unit": "Thùng",
+        "conversion_rate": "48"
+    },
+    {
+        "index": 22,
+        "category_id": "2",
+        "name": "Cà Chua Cô Đặc Đóng Hộp 400g",
+        "image_url": "https:\/\/example.com\/images\/can-007-main.jpg",
+        "unit_type": "Hộp",
+        "sku": "CAN-FOO-007",
+        "box_unit": "Thùng",
+        "conversion_rate": "48"
+    },
+    {
+        "index": 23,
+        "category_id": "2",
+        "name": "Dứa Cắt Lát Đóng Hộp 565g",
+        "image_url": "https:\/\/example.com\/images\/can-008-main.jpg",
+        "unit_type": "Hộp",
+        "sku": "CAN-FOO-008",
+        "box_unit": "Thùng",
+        "conversion_rate": "48"
+    },
+    {
+        "index": 24,
+        "category_id": "2",
+        "name": "Thịt Bò Hầm Vissan 150g",
+        "image_url": "https:\/\/example.com\/images\/can-009-main.jpg",
+        "unit_type": "Hộp",
+        "sku": "CAN-FOO-009",
+        "box_unit": "Thùng",
+        "conversion_rate": "48"
+    },
+    {
+        "index": 25,
+        "category_id": "2",
+        "name": "Nấm Kim Châm Ngâm Tương 200g",
+        "image_url": "https:\/\/example.com\/images\/can-010-main.jpg",
+        "unit_type": "Hộp",
+        "sku": "CAN-FOO-010",
+        "box_unit": "Thùng",
+        "conversion_rate": "48"
+    },
+    {
+        "index": 26,
+        "category_id": "2",
+        "name": "Xúc Xích Đóng Hộp 250g",
+        "image_url": "https:\/\/example.com\/images\/can-011-main.jpg",
+        "unit_type": "Hộp",
+        "sku": "CAN-FOO-011",
+        "box_unit": "Thùng",
+        "conversion_rate": "48"
+    },
+    {
+        "index": 27,
+        "category_id": "2",
+        "name": "Cá Mòi Đóng Hộp 155g",
+        "image_url": "https:\/\/example.com\/images\/can-012-main.jpg",
+        "unit_type": "Hộp",
+        "sku": "CAN-FOO-012",
+        "box_unit": "Thùng",
+        "conversion_rate": "48"
+    },
+    {
+        "index": 28,
+        "category_id": "2",
+        "name": "Trái Cây Hỗn Hợp Đóng Hộp 825g",
+        "image_url": "https:\/\/example.com\/images\/can-013-main.jpg",
+        "unit_type": "Hộp",
+        "sku": "CAN-FOO-013",
+        "box_unit": "Thùng",
+        "conversion_rate": "48"
+    },
+    {
+        "index": 29,
+        "category_id": "2",
+        "name": "Măng Tây Hộp 400g",
+        "image_url": "https:\/\/example.com\/images\/can-014-main.jpg",
+        "unit_type": "Hộp",
+        "sku": "CAN-FOO-014",
+        "box_unit": "Thùng",
+        "conversion_rate": "48"
+    },
+    {
+        "index": 30,
+        "category_id": "2",
+        "name": "Đậu Hà Lan Đóng Hộp 400g",
+        "image_url": "https:\/\/example.com\/images\/can-015-main.jpg",
+        "unit_type": "Hộp",
+        "sku": "CAN-FOO-015",
+        "box_unit": "Thùng",
+        "conversion_rate": "48"
+    },
+    {
+        "index": 31,
+        "category_id": "3",
+        "name": "Xúc Xích Đức Việt 200g",
+        "image_url": "https:\/\/example.com\/images\/fre-001-main.jpg",
+        "unit_type": "Gói",
+        "sku": "FRE-PAC-001",
+        "box_unit": "Thùng",
+        "conversion_rate": "20"
+    },
+    {
+        "index": 32,
+        "category_id": "3",
+        "name": "Xúc Xích Vissan 250g",
+        "image_url": "https:\/\/example.com\/images\/fre-002-main.jpg",
+        "unit_type": "Gói",
+        "sku": "FRE-PAC-002",
+        "box_unit": "Thùng",
+        "conversion_rate": "20"
+    },
+    {
+        "index": 33,
+        "category_id": "3",
+        "name": "Chả Lụa Vissan 500g",
+        "image_url": "https:\/\/example.com\/images\/fre-003-main.jpg",
+        "unit_type": "Gói",
+        "sku": "FRE-PAC-003",
+        "box_unit": "Thùng",
+        "conversion_rate": "20"
+    },
+    {
+        "index": 34,
+        "category_id": "3",
+        "name": "Chả Bò Gói Lá Chuối 500g",
+        "image_url": "https:\/\/example.com\/images\/fre-004-main.jpg",
+        "unit_type": "Gói",
+        "sku": "FRE-PAC-004",
+        "box_unit": "Thùng",
+        "conversion_rate": "20"
+    },
+    {
+        "index": 35,
+        "category_id": "3",
+        "name": "Thịt Bacon C.P 200g",
+        "image_url": "https:\/\/example.com\/images\/fre-005-main.jpg",
+        "unit_type": "Gói",
+        "sku": "FRE-PAC-005",
+        "box_unit": "Thùng",
+        "conversion_rate": "20"
+    },
+    {
+        "index": 36,
+        "category_id": "3",
+        "name": "Phô Mai Bò Cười 120g",
+        "image_url": "https:\/\/example.com\/images\/fre-006-main.jpg",
+        "unit_type": "Gói",
+        "sku": "FRE-PAC-006",
+        "box_unit": "Thùng",
+        "conversion_rate": "20"
+    },
+    {
+        "index": 37,
+        "category_id": "3",
+        "name": "Sữa Chua Vinamilk Có Đường 100g",
+        "image_url": "https:\/\/example.com\/images\/fre-007-main.jpg",
+        "unit_type": "Gói",
+        "sku": "FRE-PAC-007",
+        "box_unit": "Thùng",
+        "conversion_rate": "20"
+    },
+    {
+        "index": 38,
+        "category_id": "3",
+        "name": "Bơ Lạc Đậu Phộng 200g",
+        "image_url": "https:\/\/example.com\/images\/fre-008-main.jpg",
+        "unit_type": "Gói",
+        "sku": "FRE-PAC-008",
+        "box_unit": "Thùng",
+        "conversion_rate": "20"
+    },
+    {
+        "index": 39,
+        "category_id": "3",
+        "name": "Kem Tươi Vani 1L",
+        "image_url": "https:\/\/example.com\/images\/fre-009-main.jpg",
+        "unit_type": "Hộp",
+        "sku": "FRE-PAC-009",
+        "box_unit": "Thùng",
+        "conversion_rate": "20"
+    },
+    {
+        "index": 40,
+        "category_id": "3",
+        "name": "Pizza Hải Sản Cấp Đông 300g",
+        "image_url": "https:\/\/example.com\/images\/fre-010-main.jpg",
+        "unit_type": "Gói",
+        "sku": "FRE-PAC-010",
+        "box_unit": "Thùng",
+        "conversion_rate": "20"
+    },
+    {
+        "index": 41,
+        "category_id": "3",
+        "name": "Sủi Cảo Nhân Thịt Cấp Đông 500g",
+        "image_url": "https:\/\/example.com\/images\/fre-011-main.jpg",
+        "unit_type": "Gói",
+        "sku": "FRE-PAC-011",
+        "box_unit": "Thùng",
+        "conversion_rate": "20"
+    },
+    {
+        "index": 42,
+        "category_id": "3",
+        "name": "Chả Giò Rế Cấp Đông 400g",
+        "image_url": "https:\/\/example.com\/images\/fre-012-main.jpg",
+        "unit_type": "Gói",
+        "sku": "FRE-PAC-012",
+        "box_unit": "Thùng",
+        "conversion_rate": "20"
+    },
+    {
+        "index": 43,
+        "category_id": "3",
+        "name": "Thịt Gà Làm Sạch C.P 1Kg",
+        "image_url": "https:\/\/example.com\/images\/fre-013-main.jpg",
+        "unit_type": "Gói",
+        "sku": "FRE-PAC-013",
+        "box_unit": "Thùng",
+        "conversion_rate": "20"
+    },
+    {
+        "index": 44,
+        "category_id": "3",
+        "name": "Cá Viên Chiên Cấp Đông 500g",
+        "image_url": "https:\/\/example.com\/images\/fre-014-main.jpg",
+        "unit_type": "Gói",
+        "sku": "FRE-PAC-014",
+        "box_unit": "Thùng",
+        "conversion_rate": "20"
+    },
+    {
+        "index": 45,
+        "category_id": "3",
+        "name": "Bò Viên Cấp Đông 500g",
+        "image_url": "https:\/\/example.com\/images\/fre-015-main.jpg",
+        "unit_type": "Gói",
+        "sku": "FRE-PAC-015",
+        "box_unit": "Thùng",
+        "conversion_rate": "20"
+    },
+    {
+        "index": 46,
+        "category_id": "4",
+        "name": "Mì Hảo Hảo Tôm Chua Cay 75g",
+        "image_url": "https:\/\/example.com\/images\/dry-001-main.jpg",
+        "unit_type": "Gói",
+        "sku": "DRY-GOO-001",
+        "box_unit": "Thùng",
+        "conversion_rate": "30"
+    },
+    {
+        "index": 47,
+        "category_id": "4",
+        "name": "Mì Omachi Xốt Vang 80g",
+        "image_url": "https:\/\/example.com\/images\/dry-002-main.jpg",
+        "unit_type": "Gói",
+        "sku": "DRY-GOO-002",
+        "box_unit": "Thùng",
+        "conversion_rate": "30"
+    },
+    {
+        "index": 48,
+        "category_id": "4",
+        "name": "Gạo ST25 5Kg",
+        "image_url": "https:\/\/example.com\/images\/dry-003-main.jpg",
+        "unit_type": "Gói",
+        "sku": "DRY-GOO-003",
+        "box_unit": "Thùng",
+        "conversion_rate": "30"
+    },
+    {
+        "index": 49,
+        "category_id": "4",
+        "name": "Phở Khô Vifon 500g",
+        "image_url": "https:\/\/example.com\/images\/dry-004-main.jpg",
+        "unit_type": "Gói",
+        "sku": "DRY-GOO-004",
+        "box_unit": "Thùng",
+        "conversion_rate": "30"
+    },
+    {
+        "index": 50,
+        "category_id": "4",
+        "name": "Bún Khô Safoco 400g",
+        "image_url": "https:\/\/example.com\/images\/dry-005-main.jpg",
+        "unit_type": "Gói",
+        "sku": "DRY-GOO-005",
+        "box_unit": "Thùng",
+        "conversion_rate": "30"
+    },
+    {
+        "index": 51,
+        "category_id": "4",
+        "name": "Bánh Quy Cosy 210g",
+        "image_url": "https:\/\/example.com\/images\/dry-006-main.jpg",
+        "unit_type": "Gói",
+        "sku": "DRY-GOO-006",
+        "box_unit": "Thùng",
+        "conversion_rate": "30"
+    },
+    {
+        "index": 52,
+        "category_id": "4",
+        "name": "Bánh Chocopie 12 Cái 396g",
+        "image_url": "https:\/\/example.com\/images\/dry-007-main.jpg",
+        "unit_type": "Gói",
+        "sku": "DRY-GOO-007",
+        "box_unit": "Thùng",
+        "conversion_rate": "30"
+    },
+    {
+        "index": 53,
+        "category_id": "4",
+        "name": "Kẹo Dẻo Chupa Chups 90g",
+        "image_url": "https:\/\/example.com\/images\/dry-008-main.jpg",
+        "unit_type": "Gói",
+        "sku": "DRY-GOO-008",
+        "box_unit": "Thùng",
+        "conversion_rate": "30"
+    },
+    {
+        "index": 54,
+        "category_id": "4",
+        "name": "Hạt Điều Rang Muối 200g",
+        "image_url": "https:\/\/example.com\/images\/dry-009-main.jpg",
+        "unit_type": "Gói",
+        "sku": "DRY-GOO-009",
+        "box_unit": "Thùng",
+        "conversion_rate": "30"
+    },
+    {
+        "index": 55,
+        "category_id": "4",
+        "name": "Cà Phê G7 3in1 50 Gói",
+        "image_url": "https:\/\/example.com\/images\/dry-010-main.jpg",
+        "unit_type": "Hộp",
+        "sku": "DRY-GOO-010",
+        "box_unit": "Thùng",
+        "conversion_rate": "30"
+    },
+    {
+        "index": 56,
+        "category_id": "4",
+        "name": "Trà Túi Lọc Lipton 50 Tép",
+        "image_url": "https:\/\/example.com\/images\/dry-011-main.jpg",
+        "unit_type": "Hộp",
+        "sku": "DRY-GOO-011",
+        "box_unit": "Thùng",
+        "conversion_rate": "30"
+    },
+    {
+        "index": 57,
+        "category_id": "4",
+        "name": "Đậu Phộng Tân Tân 200g",
+        "image_url": "https:\/\/example.com\/images\/dry-012-main.jpg",
+        "unit_type": "Gói",
+        "sku": "DRY-GOO-012",
+        "box_unit": "Thùng",
+        "conversion_rate": "30"
+    },
+    {
+        "index": 58,
+        "category_id": "4",
+        "name": "Bột Ngọt Ajinomoto 400g",
+        "image_url": "https:\/\/example.com\/images\/dry-013-main.jpg",
+        "unit_type": "Gói",
+        "sku": "DRY-GOO-013",
+        "box_unit": "Thùng",
+        "conversion_rate": "30"
+    },
+    {
+        "index": 59,
+        "category_id": "4",
+        "name": "Đường Kính Trắng Biên Hòa 1Kg",
+        "image_url": "https:\/\/example.com\/images\/dry-014-main.jpg",
+        "unit_type": "Gói",
+        "sku": "DRY-GOO-014",
+        "box_unit": "Thùng",
+        "conversion_rate": "30"
+    },
+    {
+        "index": 60,
+        "category_id": "4",
+        "name": "Nước Mắm Nam Ngư 500ml",
+        "image_url": "https:\/\/example.com\/images\/dry-015-main.jpg",
+        "unit_type": "Gói",
+        "sku": "DRY-GOO-015",
+        "box_unit": "Thùng",
+        "conversion_rate": "30"
+    }
+]

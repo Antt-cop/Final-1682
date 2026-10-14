@@ -1,0 +1,25 @@
+---
+description: Dong Khoi Store Web Verify/QC — Các bước kiểm thử phải tương tác trực tiếp trên UI; không tự ý điều hướng tới URL không có trên giao diện.
+alwaysApply: true
+---
+
+# UI-first navigation (Dong Khoi Store Web)
+
+Mọi bước thực thi test case và mọi bước tái hiện lỗi (reproduce) trong report phải **tương tác trực tiếp trên UI** (click link, hover menu, tap nút hamburger trên mobile, mở modal, chọn dropdown, submit form). Tuyệt đối không tự bịa path/route rồi `browser_navigate` tới các URL không xuất hiện trên giao diện.
+
+## 1. Được dùng URL trực tiếp khi:
+
+- Người dùng **cung cấp** URL môi trường kiểm thử (ví dụ: `http://localhost/dongkhoistore`).
+- Mở trang chủ ban đầu (Origin / Home page) hoặc trang Admin login.
+- Kịch bản kiểm thử (Precondition) quy định rõ cần mở URL đó để bắt đầu.
+- **Trang lỗi 404:** Khi kịch bản yêu cầu kiểm tra xử lý lỗi 404, điều hướng `browser_navigate` tới `{origin}/{chuỗi-ngẫu-nhiên-10-ký-tự}` (ví dụ: `http://localhost/dongkhoistore/k7mQ2pL9xA`). Tuyệt đối không dùng đường dẫn có nghĩa tự suy đoán (như `/product/test`, `/notfound`).
+
+## 2. Nghiêm cấm:
+
+- Tự đoán route tính năng (ví dụ: tự đoán `/order-success.php` thay vì hoàn thành luồng checkout để đến trang cảm ơn).
+- Ghi các bước reproduce dạng "mở trực tiếp link `http://.../checkout`" khi tester thực tế phải bấm vào giỏ hàng rồi bấm nút Thanh toán.
+
+## 3. Xử lý khi giao diện không có lối vào trang cần test:
+
+1. Thử qua toàn bộ các lối điều hướng nhìn thấy được (Header, Mega menu danh mục, Footer, Breadcrumb, Thanh tìm kiếm).
+2. Nếu không tìm thấy liên kết trên UI → Đánh giá **Failed / Blocked** do thiếu điểm vào (entry point) từ giao diện, không tự gõ URL để bypass.

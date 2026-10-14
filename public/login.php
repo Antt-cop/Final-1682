@@ -1,13 +1,31 @@
-﻿<?php
+<?php
 if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; }
 // login.php - User login page
 require_once ROOT_PATH . '/app/config/db_connect.php';
 session_start();
 
-// If already logged in, redirect to account
+// Handle rejected status from header redirect
+if (isset($_GET['rejected']) || (isset($_SESSION['status']) && $_SESSION['status'] === 'rejected')) {
+    $_SESSION = [];
+    if (session_id()) { session_destroy(); }
+    session_start();
+    $flash_warning = 'Your account has not been approved or has been rejected by Dong Khoi Store Administration. Please contact Hotline 09 730 25 730 for assistance.';
+}
+
+// If already logged in, redirect to account or target redirect
+$redirect = $_REQUEST['redirect'] ?? '';
 if (isset($_SESSION['user_id'])) {
-    header('Location: my-account.php');
+    if (!empty($redirect) && (strpos($redirect, BASE_URL) === 0 || strpos($redirect, '/') === 0)) {
+        header('Location: ' . $redirect);
+    } else {
+        header('Location: my-account.php');
+    }
     exit;
+}
+
+if (!isset($flash_warning)) {
+    $flash_warning = $_SESSION['flash_warning'] ?? '';
+    unset($_SESSION['flash_warning']);
 }
 
 $errors = [];
@@ -30,14 +48,13 @@ if (isset($_GET['token']) && !empty($_GET['token'])) {
         $_SESSION['user_name'] = $name;
         $_SESSION['role']      = $role;
         $_SESSION['status']    = $status;
-        
-        if ($status === 'rejected') {
-            header('Location: seller_rejected.php');
-            exit;
+
+        if ($role === 'admin') {
+            header('Location: ../admin/dashboard.php');
         } else {
-            header('Location: index.php');
-            exit;
+            header('Location: ../index.php');
         }
+        exit;
     } else {
         $errors[] = 'Invalid or expired login link.';
     }
@@ -66,27 +83,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->bind_result($id, $name, $hash, $role, $status);
             $stmt->fetch();
             if (password_verify($password, $hash)) {
-                
-                if ($role === 'distributor' && $status === 'pending') {
-                    $errors[] = 'Your seller account is currently pending approval by an administrator.';
-                } else {
-                    $_SESSION['user_id']   = $id;
-                    $_SESSION['user_name'] = $name;
-                    $_SESSION['role']      = $role;
-                    $_SESSION['status']    = $status;
-                    
-                    if ($status === 'rejected') {
-                        header('Location: seller_rejected.php');
-                        exit;
-                    }
-                    
-                    if ($role === 'admin') {
-                        header('Location: admin_dashboard.php');
-                    } else {
-                        header('Location: index.php');
-                    }
+                $_SESSION['user_id']   = $id;
+                $_SESSION['user_name'] = $name;
+                $_SESSION['role']      = $role;
+                $_SESSION['status']    = $status;
+
+                $target = $_REQUEST['redirect'] ?? '';
+                if (!empty($target) && (strpos($target, BASE_URL) === 0 || (strpos($target, '/') === 0 && strpos($target, '//') !== 0))) {
+                    header('Location: ' . $target);
                     exit;
                 }
+
+                if ($role === 'admin') {
+                    header('Location: ../admin/dashboard.php');
+                } else {
+                    header('Location: ../index.php');
+                }
+                exit;
             } else {
                 $errors[] = 'Incorrect password.';
             }
@@ -99,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $page_name = 'login';
-$page_title = 'Login - Freshshop';
+$page_title = 'Login - Dong Khoi Store';
 include INCLUDES_PATH . '/header.php';
 ?>
 
@@ -110,7 +123,7 @@ include INCLUDES_PATH . '/header.php';
                 <div class="col-lg-12">
                     <h2>Login</h2>
                     <ul class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="/freshshop-master/index.php">Home</a></li>
+                        <li class="breadcrumb-item"><a href="<?= BASE_URL ?>/index.php">Home</a></li>
                         <li class="breadcrumb-item active">Login</li>
                     </ul>
                 </div>
@@ -130,24 +143,29 @@ include INCLUDES_PATH . '/header.php';
                                 <i class="fa fa-sign-in-alt"></i>
                             </div>
                             <h3>Welcome Back!</h3>
-                            <p>Sign in to your account</p>
+                            <p>Join Dong Khoi Store to access wholesale products</p>
                         </div>
 
-                        <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } if (!empty($errors)): ?>
+                        <?php if (!empty($flash_warning)): ?>
+                            <div class="alert alert-warning">
+                                <i class="fa fa-info-circle mr-1"></i> <?= htmlspecialchars($flash_warning) ?>
+                            </div>
+                        <?php endif; ?>
+
+                        <?php if (!empty($errors)): ?>
                             <div class="alert alert-danger">
                                 <ul class="mb-0">
-                                    <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } foreach ($errors as $e): ?>
+                                    <?php foreach ($errors as $e): ?>
                                         <li><?= htmlspecialchars($e) ?></li>
-                                    <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endforeach; ?>
+                                    <?php endforeach; ?>
                                 </ul>
                             </div>
-                        <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endif; ?>
+                        <?php endif; ?>
 
-                        <form method="post" action="/freshshop-master/public/login.php" class="auth-form">
+                        <form method="post" action="<?= BASE_URL ?>/public/login.php" class="auth-form">
+                            <?php if (!empty($redirect)): ?>
+                                <input type="hidden" name="redirect" value="<?= htmlspecialchars($redirect) ?>">
+                            <?php endif; ?>
                             <div class="form-group">
                                 <label for="login-email"><i class="fa fa-envelope"></i> Email</label>
                                 <input type="email" class="form-control" id="login-email" name="email" placeholder="Enter your email" required value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
@@ -162,7 +180,7 @@ if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endif
                         </form>
 
                         <div class="auth-footer">
-                            <p>Don't have an account? <a href="/freshshop-master/public/register.php">Register now</a></p>
+                            <p>Don't have an account? <a href="<?= BASE_URL ?>/public/register.php">Register now</a></p>
                         </div>
                     </div>
                 </div>
@@ -171,6 +189,7 @@ if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endif
     </div>
     <!-- End Login Form -->
 
-<?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } include INCLUDES_PATH . '/footer.php'; ?>
+<?php include INCLUDES_PATH . '/footer.php'; ?>
+
+
 

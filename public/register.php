@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; }
 // register.php - User registration page (root-level)
 require_once ROOT_PATH . '/app/config/db_connect.php';
@@ -71,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $page_name = 'register';
-$page_title = 'Register - Freshshop';
+$page_title = 'Register - Dong Khoi Store';
 include INCLUDES_PATH . '/header.php';
 ?>
 
@@ -82,7 +82,7 @@ include INCLUDES_PATH . '/header.php';
                 <div class="col-lg-12">
                     <h2>Register</h2>
                     <ul class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="/freshshop-master/index.php">Home</a></li>
+                        <li class="breadcrumb-item"><a href="<?= BASE_URL ?>/index.php">Home</a></li>
                         <li class="breadcrumb-item active">Register</li>
                     </ul>
                 </div>
@@ -102,24 +102,20 @@ include INCLUDES_PATH . '/header.php';
                                 <i class="fa fa-user-plus"></i>
                             </div>
                             <h3>Create a new account</h3>
-                            <p>Join Freshshop to enjoy exciting offers</p>
+                            <p>Join Dong Khoi Store to access wholesale products</p>
                         </div>
 
-                        <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } if (!empty($errors)): ?>
+                        <?php if (!empty($errors)): ?>
                             <div class="alert alert-danger">
                                 <ul class="mb-0">
-                                    <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } foreach ($errors as $err): ?>
+                                    <?php foreach ($errors as $err): ?>
                                         <li><?= htmlspecialchars($err) ?></li>
-                                    <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endforeach; ?>
+                                    <?php endforeach; ?>
                                 </ul>
                             </div>
-                        <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endif; ?>
+                        <?php endif; ?>
 
-                        <form method="post" action="/freshshop-master/public/register.php" class="auth-form">
+                        <form method="post" action="<?= BASE_URL ?>/public/register.php" class="auth-form">
                             <div class="form-group">
                                 <label for="reg-name"><i class="fa fa-user"></i> Full Name</label>
                                 <input type="text" class="form-control" id="reg-name" name="name" placeholder="Enter your full name" required value="<?= htmlspecialchars($_POST['name'] ?? '') ?>">
@@ -150,8 +146,7 @@ if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endif
                         </form>
 
                         <div class="auth-footer">
-                            <p>Already have an account? <a href="/freshshop-master/public/login.php">Log in now</a></p>
-                            <p>Want to become a seller? <a href="register_seller.php">Register as Seller</a></p>
+                            <p>Already have an account? <a href="<?= BASE_URL ?>/public/login.php">Log in now</a></p>
                         </div>
                     </div>
                 </div>
@@ -160,6 +155,7 @@ if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endif
     </div>
     <!-- End Register Form -->
 
-<?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } include INCLUDES_PATH . '/footer.php'; ?>
+<?php include INCLUDES_PATH . '/footer.php'; ?>
+
+
 

@@ -1,4 +1,4 @@
-USE canteen_b2b;
+USE dongkhoistore;
 
 -- Add columns for products table (support inventory)
 ALTER TABLE products 

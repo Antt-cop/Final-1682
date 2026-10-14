@@ -21,8 +21,8 @@ $instant_cat_id = 0;
 
 $cat_res = $conn->query("SELECT id, name FROM categories");
 while ($row = $cat_res->fetch_assoc()) {
-    if ($row['name'] === 'Packaged Fresh Food' || $row['name'] === 'Sản phẩm tươi sống đóng gói') $fresh_cat_id = $row['id'];
-    if ($row['name'] === 'Instant Food' || $row['name'] === 'Đồ ăn liền') $instant_cat_id = $row['id'];
+    if ($row['name'] === 'Packaged Fresh Food' || stripos($row['name'], 'Fresh') !== false) $fresh_cat_id = $row['id'];
+    if ($row['name'] === 'Instant Food' || stripos($row['name'], 'Instant') !== false) $instant_cat_id = $row['id'];
 }
 
 if ($fresh_cat_id == 0 || $instant_cat_id == 0) {

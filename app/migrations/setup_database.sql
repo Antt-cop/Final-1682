@@ -1,7 +1,7 @@
 -- Database Schema for B2B E-commerce Distribution Platform
 
-CREATE DATABASE IF NOT EXISTS canteen_b2b;
-USE canteen_b2b;
+CREATE DATABASE IF NOT EXISTS dongkhoistore;
+USE dongkhoistore;
 
 -- Users Table (Supports Admin, Distributor, Buyer/Canteen)
 CREATE TABLE IF NOT EXISTS users (

@@ -1,7 +1,7 @@
-﻿<?php
+<?php
 if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../../bootstrap.php'; }
 // register.php - User registration (backend only, no HTML)
-require_once __DIR__ . '/db_connect.php';
+require_once ROOT_PATH . '/app/config/db_connect.php';
 session_start();
 
 $errors = [];
@@ -66,4 +66,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // If accessed via GET, redirect to register page
 header('Location: ../register.php');
 exit;
+
 

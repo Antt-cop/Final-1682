@@ -1,36 +1,49 @@
-﻿<?php
+<?php
 if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; }
 $page_name = 'dashboard';
 $page_title = 'Dashboard - Admin Panel';
 include __DIR__ . '/header.php';
 
-// Get total products
-$prod_res = $conn->query("SELECT COUNT(*) as total FROM products");
+// Total products
+$prod_res = $conn->query("SELECT COUNT(*) as total FROM products WHERE status='active'");
 $total_products = $prod_res->fetch_assoc()['total'] ?? 0;
 
-// Get total orders
+// Total orders
 $order_res = $conn->query("SELECT COUNT(*) as total FROM orders");
 $total_orders = $order_res->fetch_assoc()['total'] ?? 0;
 
-// Get total customers
-$cust_res = $conn->query("SELECT COUNT(*) as total FROM users WHERE role IN ('buyer_canteen', 'distributor')");
+// Total clients (Canteens & Partner Wholesalers)
+$cust_res = $conn->query("SELECT COUNT(*) as total FROM users WHERE role != 'admin'");
 $total_customers = $cust_res->fetch_assoc()['total'] ?? 0;
 
-// Get total revenue
+// Total revenue
 $rev_res = $conn->query("SELECT SUM(total_amount) as total FROM orders WHERE payment_status = 'paid'");
 $total_revenue = $rev_res->fetch_assoc()['total'] ?? 0;
 
-// Get low stock products
-$low_stock_query = "SELECT id, name, stock_quantity, min_stock_level FROM products WHERE stock_quantity <= min_stock_level LIMIT 5";
-$low_stock_result = $conn->query($low_stock_query);
+// Low stock products (storable only)
+$low_stock_result = $conn->query("
+    SELECT id, name, stock_quantity, min_stock_level, unit_type
+    FROM products
+    WHERE stock_quantity <= min_stock_level AND storage_type = 'storable' AND status = 'active'
+    ORDER BY stock_quantity ASC
+    LIMIT 8
+");
 
-// Get recent orders
-$recent_orders_query = "
-    SELECT o.id, u.username, o.total_amount, o.status, o.created_at 
-    FROM orders o 
-    LEFT JOIN users u ON o.user_id = u.id 
-    ORDER BY o.created_at DESC LIMIT 5";
-$recent_orders_result = $conn->query($recent_orders_query);
+// Out of stock count
+$out_res = $conn->query("SELECT COUNT(*) as cnt FROM products WHERE stock_quantity <= 0 AND storage_type='storable'");
+$out_of_stock_count = $out_res ? $out_res->fetch_assoc()['cnt'] : 0;
+
+// Pending orders count
+$pending_res = $conn->query("SELECT COUNT(*) as cnt FROM orders WHERE status='pending'");
+$pending_orders_count = $pending_res ? $pending_res->fetch_assoc()['cnt'] : 0;
+
+// Recent orders
+$recent_orders_result = $conn->query("
+    SELECT o.id, u.username, o.total_amount, o.status, o.created_at
+    FROM orders o
+    LEFT JOIN users u ON o.user_id = u.id
+    ORDER BY o.created_at DESC LIMIT 5
+");
 ?>
 
 <div class="row">
@@ -52,7 +65,7 @@ $recent_orders_result = $conn->query($recent_orders_query);
                     <i class="fas fa-box fa-3x opacity-50"></i>
                 </div>
             </div>
-            <a href="admin_products.php" class="card-footer text-white clearfix small z-1">
+            <a href="products.php" class="card-footer text-white clearfix small z-1">
                 <span class="float-left">View Details</span>
                 <span class="float-right"><i class="fas fa-angle-right"></i></span>
             </a>
@@ -64,12 +77,12 @@ $recent_orders_result = $conn->query($recent_orders_query);
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <h6 class="text-uppercase mb-1">Total Revenue</h6>
-                        <h2 class="mb-0">$<?= number_format($total_revenue, 2) ?></h2>
+                        <h2 class="mb-0"><?= format_vnd($total_revenue) ?></h2>
                     </div>
                     <i class="fas fa-dollar-sign fa-3x opacity-50"></i>
                 </div>
             </div>
-            <a href="admin_reports.php" class="card-footer text-white clearfix small z-1">
+            <a href="reports.php" class="card-footer text-white clearfix small z-1">
                 <span class="float-left">View Reports</span>
                 <span class="float-right"><i class="fas fa-angle-right"></i></span>
             </a>
@@ -86,7 +99,7 @@ $recent_orders_result = $conn->query($recent_orders_query);
                     <i class="fas fa-shopping-cart fa-3x opacity-50 text-white"></i>
                 </div>
             </div>
-            <a href="admin_orders.php" class="card-footer text-white clearfix small z-1">
+            <a href="orders.php" class="card-footer text-white clearfix small z-1">
                 <span class="float-left text-white">View Details</span>
                 <span class="float-right text-white"><i class="fas fa-angle-right"></i></span>
             </a>
@@ -103,7 +116,7 @@ $recent_orders_result = $conn->query($recent_orders_query);
                     <i class="fas fa-users fa-3x opacity-50"></i>
                 </div>
             </div>
-            <a href="admin_customers.php" class="card-footer text-white clearfix small z-1">
+            <a href="customers.php" class="card-footer text-white clearfix small z-1">
                 <span class="float-left">View Details</span>
                 <span class="float-right"><i class="fas fa-angle-right"></i></span>
             </a>
@@ -117,7 +130,7 @@ $recent_orders_result = $conn->query($recent_orders_query);
         <div class="card h-100">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="m-0"><i class="fas fa-shopping-basket"></i> Recent Orders</h5>
-                <a href="admin_orders.php" class="btn btn-sm btn-outline-secondary">View All</a>
+                <a href="orders.php" class="btn btn-sm btn-outline-secondary">View All</a>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -132,17 +145,14 @@ $recent_orders_result = $conn->query($recent_orders_query);
                             </tr>
                         </thead>
                         <tbody>
-                            <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } if($recent_orders_result && $recent_orders_result->num_rows > 0): ?>
-                                <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } while($row = $recent_orders_result->fetch_assoc()): ?>
+                            <?php if($recent_orders_result && $recent_orders_result->num_rows > 0): ?>
+                                <?php while($row = $recent_orders_result->fetch_assoc()): ?>
                                     <tr>
                                         <td>#<?= $row['id'] ?></td>
                                         <td><?= htmlspecialchars($row['username'] ?? 'Unknown') ?></td>
-                                        <td>$<?= number_format($row['total_amount'], 2) ?></td>
+                                        <td><?= format_vnd($row['total_amount']) ?></td>
                                         <td>
                                             <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; }
                                             $status_class = 'badge-secondary';
                                             if ($row['status'] == 'pending') $status_class = 'badge-warning';
                                             elseif ($row['status'] == 'processing') $status_class = 'badge-info';
@@ -154,15 +164,12 @@ if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; }
                                         </td>
                                         <td><?= date('M d, Y', strtotime($row['created_at'])) ?></td>
                                     </tr>
-                                <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endwhile; ?>
-                            <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } else: ?>
+                                <?php endwhile; ?>
+                            <?php else: ?>
                                 <tr>
                                     <td colspan="5" class="text-center">No recent orders found.</td>
                                 </tr>
-                            <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endif; ?>
+                            <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
@@ -175,7 +182,7 @@ if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endif
         <div class="card h-100 border-danger">
             <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
                 <h5 class="m-0 text-white"><i class="fas fa-exclamation-triangle"></i> Low Stock Alerts</h5>
-                <a href="admin_inventory.php" class="btn btn-sm btn-light text-danger">Manage</a>
+                <a href="inventory.php" class="btn btn-sm btn-light text-danger">Manage</a>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -188,37 +195,29 @@ if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endif
                             </tr>
                         </thead>
                         <tbody>
-                            <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } if($low_stock_result && $low_stock_result->num_rows > 0): ?>
-                                <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } while($row = $low_stock_result->fetch_assoc()): ?>
+                            <?php if($low_stock_result && $low_stock_result->num_rows > 0): ?>
+                                <?php while($row = $low_stock_result->fetch_assoc()): ?>
                                     <tr>
                                         <td>
-                                            <a href="admin_products.php?edit=<?= $row['id'] ?>" class="text-dark">
+                                            <a href="products.php?edit=<?= $row['id'] ?>" class="text-dark">
                                                 <?= htmlspecialchars($row['name']) ?>
                                             </a>
                                         </td>
                                         <td>
-                                            <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } if($row['stock_quantity'] == 0): ?>
+                                            <?php if($row['stock_quantity'] == 0): ?>
                                                 <span class="badge badge-admin badge-danger">Out of Stock</span>
-                                            <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } else: ?>
+                                            <?php else: ?>
                                                 <span class="badge badge-admin badge-warning text-dark"><?= $row['stock_quantity'] ?></span>
-                                            <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endif; ?>
+                                            <?php endif; ?>
                                         </td>
                                         <td><?= $row['min_stock_level'] ?></td>
                                     </tr>
-                                <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endwhile; ?>
-                            <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } else: ?>
+                                <?php endwhile; ?>
+                            <?php else: ?>
                                 <tr>
                                     <td colspan="3" class="text-center">All products are well stocked.</td>
                                 </tr>
-                            <?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endif; ?>
+                            <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
@@ -227,6 +226,6 @@ if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } endif
     </div>
 </div>
 
-<?php
-if (!defined('ROOT_PATH')) { require_once __DIR__ . '/../bootstrap.php'; } include __DIR__ . '/footer.php'; ?>
+<?php include __DIR__ . '/footer.php'; ?>
+
 
