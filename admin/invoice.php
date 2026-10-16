@@ -221,6 +221,7 @@ $grand_total  = floatval($order['total_amount']);
                                 <?php
                                 $pay_map = [
                                     'cod'           => '<span class="badge badge-secondary badge-b2b">Cash on Delivery (COD)</span>',
+                                    'vnpay'         => '<span class="badge badge-primary badge-b2b" style="background:#005baa;">VNPAY Gateway</span>',
                                     'momo'          => '<span class="badge badge-danger badge-b2b" style="background:#a50064;">MoMo E-Wallet</span>',
                                     'bank_transfer' => '<span class="badge badge-info badge-b2b">B2B Wire Transfer</span>',
                                     'e_wallet'      => '<span class="badge badge-primary badge-b2b">E-Wallet</span>',

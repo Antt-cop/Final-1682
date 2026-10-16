@@ -410,7 +410,7 @@ include INCLUDES_PATH . '/header.php';
                                     </span>
                                 </div>
                                 <div class="service-desc">
-                                    <h4>Payment Options <span class="badge-pill-soft badge-purple"><i class="fa fa-wallet"></i> MoMo & COD</span></h4>
+                                    <h4>Payment Options <span class="badge-pill-soft badge-purple"><i class="fa fa-wallet"></i> VNPAY, MoMo & COD</span></h4>
                                     <p>Manage payment methods</p>
                                 </div>
                                 <div class="card-footer-cta">
@@ -511,6 +511,18 @@ include INCLUDES_PATH . '/header.php';
                     </button>
                 </div>
                 <div class="modal-body p-4">
+                    <!-- VNPAY -->
+                    <div class="p-3 mb-3 border rounded d-flex align-items-center" style="background: #f0f7ff; border-color: #bae0ff !important; border-radius: 10px;">
+                        <div class="mr-3 text-center" style="width: 48px;">
+                            <span style="display:inline-flex; width:40px; height:40px; border-radius:8px; background:#005baa; color:#fff; align-items:center; justify-content:center; font-weight:900; font-size:12px;">VNPAY</span>
+                        </div>
+                        <div>
+                            <h6 class="font-weight-bold mb-1" style="color: #005baa;">VNPAY Gateway (Official Sandbox)</h6>
+                            <p class="text-muted small mb-0">ATM Napas (NCB test card), VNPAY-QR, Visa/Mastercard.</p>
+                        </div>
+                        <span class="badge badge-success ml-auto" style="border-radius: 999px; padding: 5px 10px;">Available</span>
+                    </div>
+
                     <!-- MoMo -->
                     <div class="p-3 mb-3 border rounded d-flex align-items-center" style="background: #fdf2f7; border-color: #f8bbd0 !important; border-radius: 10px;">
                         <div class="mr-3 text-center" style="width: 48px;">

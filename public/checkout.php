@@ -118,6 +118,16 @@ include INCLUDES_PATH . '/header.php';
                                         </div>
                                     </div>
 
+                                    <div class="custom-control custom-radio mb-3 p-3 rounded border" style="background: #f0f7ff; border-color: #bae0ff !important;">
+                                        <input id="vnpay" name="paymentMethod" value="vnpay" type="radio" class="custom-control-input" required>
+                                        <label class="custom-control-label font-weight-bold d-flex align-items-center" for="vnpay">
+                                            <span style="display:inline-flex; width:26px; height:26px; border-radius:6px; background:#005baa; color:#fff; align-items:center; justify-content:center; font-weight:900; font-size:9px; margin-right:8px; box-shadow: 0 2px 4px rgba(0,91,170,0.3);">VNPAY</span>
+                                            <span style="color: #005baa;">VNPAY Payment Gateway (ATM Napas / VNPAY-QR / Visa)</span>
+                                            <span class="badge badge-primary ml-2" style="font-size: 10px; background:#005baa;"><i class="fas fa-shield-alt"></i> Official Sandbox</span>
+                                        </label>
+                                        <small class="text-muted d-block ml-4 mt-1">Pay via VNPAY Sandbox with 40+ domestic ATM cards (NCB test card) or scan VNPAY-QR.</small>
+                                    </div>
+
                                     <div class="custom-control custom-radio p-3 rounded border" style="background: #fdf2f8; border-color: #fbcfe8 !important;">
                                         <input id="momo" name="paymentMethod" value="momo" type="radio" class="custom-control-input" <?= !$is_cod_allowed ? 'checked' : '' ?> required>
                                         <label class="custom-control-label font-weight-bold d-flex align-items-center" for="momo">

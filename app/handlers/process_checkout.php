@@ -95,6 +95,34 @@ try {
 
 
     // 3. Handle Payment Method Branch
+    if ($payment_method === 'vnpay') {
+        require_once ROOT_PATH . '/app/services/VNPayPaymentService.php';
+        $vnpayService = new VNPayPaymentService();
+
+        $orderInfo = "Payment for order #" . $order_id . " - Dong Khoi Store";
+        $vnpayUrl = $vnpayService->createPaymentUrl($order_id, $grand_total, $orderInfo);
+
+        if (!empty($vnpayUrl)) {
+            // Log creation
+            $stmt_log = $conn->prepare("INSERT INTO order_logs (order_id, user_id, old_status, new_status, old_payment_status, new_payment_status, note, created_at) VALUES (?, ?, 'pending', 'pending', 'unpaid', 'unpaid', 'Created VNPAY Payment Request', NOW())");
+            if ($stmt_log) {
+                $stmt_log->bind_param("ii", $order_id, $user_id);
+                $stmt_log->execute();
+            }
+
+            $conn->commit();
+
+            // Redirect user to VNPAY Sandbox gateway
+            header("Location: " . $vnpayUrl);
+            exit;
+        } else {
+            $conn->rollback();
+            $_SESSION['error'] = 'Could not generate VNPAY payment URL. Please try again.';
+            header("Location: " . BASE_URL . "/public/checkout.php");
+            exit;
+        }
+    }
+
     if ($payment_method === 'momo') {
         require_once ROOT_PATH . '/app/services/MoMoPaymentService.php';
         $momoService = new MoMoPaymentService();
