@@ -63,6 +63,12 @@ $conn = getDbConnection();
                 <li class="<?= ($page_name == 'orders') ? 'active' : '' ?>">
                     <a href="<?= BASE_URL ?>/admin/orders.php"><i class="fas fa-shopping-cart"></i> Orders</a>
                 </li>
+                <li class="<?= ($page_name == 'standing_agreements') ? 'active' : '' ?>">
+                    <a href="<?= BASE_URL ?>/admin/standing-agreements.php"><i class="fas fa-handshake"></i> Standing Contracts</a>
+                </li>
+                <li class="<?= ($page_name == 'billing_statements') ? 'active' : '' ?>">
+                    <a href="<?= BASE_URL ?>/admin/billing-statements.php"><i class="fas fa-file-invoice-dollar"></i> Credit & Billing</a>
+                </li>
                 <li class="<?= ($page_name == 'customers') ? 'active' : '' ?>">
                     <a href="<?= BASE_URL ?>/admin/customers.php"><i class="fas fa-users"></i> Customers</a>
                 </li>

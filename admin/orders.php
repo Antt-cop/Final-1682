@@ -90,7 +90,14 @@ if ($res) {
                     <?php else: ?>
                         <?php foreach($orders as $o): ?>
                             <tr>
-                                <td><strong>#<?= $o['id'] ?></strong></td>
+                                <td>
+                                    <strong>#<?= $o['id'] ?></strong>
+                                    <?php if(($o['order_type'] ?? '') === 'urgent_ad_hoc'): ?>
+                                        <span class="badge badge-warning text-dark d-block mt-1"><i class="fas fa-bolt mr-1"></i> Urgent Restock</span>
+                                    <?php elseif(($o['order_type'] ?? '') === 'standing_release'): ?>
+                                        <span class="badge badge-info d-block mt-1"><i class="fas fa-boxes mr-1"></i> Batch Release</span>
+                                    <?php endif; ?>
+                                </td>
                                 <td><?= htmlspecialchars($o['username'] ?? 'Unknown') ?><br><small class="text-muted"><?= htmlspecialchars($o['email'] ?? '') ?></small></td>
                                 <td><?= format_vnd($o['total_amount']) ?></td>
                                 <td>
@@ -100,6 +107,12 @@ if ($res) {
                                         <span class="badge badge-admin badge-dark">Refunded</span>
                                     <?php else: ?>
                                         <span class="badge badge-admin badge-warning text-dark">Unpaid</span>
+                                    <?php endif; ?>
+
+                                    <?php if(($o['payment_mode'] ?? '') === 'deferred_to_cycle'): ?>
+                                        <small class="badge badge-primary d-block mt-1">Trade Credit</small>
+                                    <?php elseif(($o['payment_mode'] ?? '') === 'partial_deposit'): ?>
+                                        <small class="badge badge-secondary d-block mt-1">Deposit: <?= format_vnd($o['deposit_amount'] ?? 0) ?></small>
                                     <?php endif; ?>
                                 </td>
                                 <td>
@@ -115,11 +128,15 @@ if ($res) {
                                 <td><?= date('d/m/Y H:i', strtotime($o['created_at'])) ?></td>
                                 <td>
                                     <?php if ($o['tracking_code']): ?>
-                                        <a href="https://tracking.ghn.dev/?order_code=<?= htmlspecialchars($o['tracking_code']) ?>" target="_blank" class="badge badge-info d-block mb-1"><i class="fas fa-truck"></i> <?= htmlspecialchars($o['tracking_code']) ?></a>
+                                        <a href="https://donhang.ghn.vn/?order_code=<?= htmlspecialchars($o['tracking_code']) ?>" target="_blank" class="badge badge-info d-block mb-1" title="Track on GHN"><i class="fas fa-truck"></i> <?= htmlspecialchars($o['tracking_code']) ?></a>
                                     <?php elseif ($o['status'] === 'processing'): ?>
-                                        <button class="btn btn-xs btn-warning mb-1" onclick="pushToGHN(<?= $o['id'] ?>)">
-                                            <i class="fas fa-paper-plane"></i> Push GHN
-                                        </button>
+                                        <?php if (($o['order_type'] ?? '') === 'standing_release'): ?>
+                                            <span class="badge badge-secondary d-block mb-1"><i class="fas fa-truck-moving mr-1"></i> Fleet Batch</span>
+                                        <?php else: ?>
+                                            <button class="btn btn-xs btn-warning mb-1" onclick="pushToGHN(<?= $o['id'] ?>, this)">
+                                                <i class="fas fa-paper-plane"></i> Push GHN
+                                            </button>
+                                        <?php endif; ?>
                                     <?php endif; ?>
                                     <button class="btn btn-sm btn-info" onclick="viewOrder(<?= $o['id'] ?>)" title="Details"><i class="fas fa-eye"></i></button>
                                     <a href="invoice.php?id=<?= $o['id'] ?>" target="_blank" class="btn btn-sm btn-outline-secondary" title="Invoice"><i class="fas fa-file-invoice"></i></a>
@@ -193,8 +210,12 @@ if ($res) {
 </div>
 
 <script>
-function pushToGHN(orderId) {
+function pushToGHN(orderId, btnElem) {
     if (!confirm('Push order #' + orderId + ' to GHN for delivery?')) return;
+    var $btn = btnElem ? $(btnElem) : null;
+    if ($btn) {
+        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Pushing...');
+    }
     $.post('<?= BASE_URL ?>/app/handlers/admin_orders.php', {
         action: 'push_ghn',
         id: orderId
@@ -206,9 +227,11 @@ function pushToGHN(orderId) {
                 location.reload();
             } else {
                 alert('❌ GHN Error: ' + res.message);
+                if ($btn) $btn.prop('disabled', false).html('<i class="fas fa-paper-plane"></i> Push GHN');
             }
         } catch(e) {
             alert('Server connection error.');
+            if ($btn) $btn.prop('disabled', false).html('<i class="fas fa-paper-plane"></i> Push GHN');
         }
     });
 }

@@ -12,6 +12,9 @@ if (!isset($_SESSION['user_id'])) {
 
 $conn = getDbConnection();
 
+require_once ROOT_PATH . '/app/services/CreditManagementService.php';
+require_once ROOT_PATH . '/app/services/StandingAgreementService.php';
+
 // Fetch Cart Products for Summary using packaging helper
 $resolved_cart = resolve_cart_items($_SESSION['cart'] ?? [], $conn);
 $cart_items    = $resolved_cart['items'];
@@ -21,6 +24,14 @@ $grand_total   = $resolved_cart['grand_total'];
 $max_cod_value = 5000000;
 $is_cod_allowed = ($grand_total <= $max_cod_value);
 
+// B2B Institutional Supply & Credit Evaluation
+$creditService = new CreditManagementService($conn);
+$standingService = new StandingAgreementService($conn);
+$userId = (int)$_SESSION['user_id'];
+$creditProfile = $creditService->getCreditProfile($userId);
+$candidateBatch = $standingService->getNextConsolidationBatch($userId);
+$creditEval = $creditService->evaluateOrderCredit($userId, $grand_total);
+$hasB2BCredit = ($creditProfile && $creditProfile['credit_limit'] > 0);
 
 $page_name = 'checkout';
 $page_title = 'Checkout - Dong Khoi Store';
@@ -102,9 +113,82 @@ include INCLUDES_PATH . '/header.php';
                                         <div class="invalid-feedback"> Please select a Ward. </div>
                                     </div>
                                 </div>
+
+                                <?php if ($hasB2BCredit): ?>
+                                <hr class="mb-4">
+                                <div class="card mb-4 border-0 shadow-sm" style="border-radius: 12px; background: #f8fafc; border: 1px solid #cbd5e1 !important;">
+                                    <div class="card-header bg-white d-flex align-items-center justify-content-between py-3" style="border-bottom: 1px solid #e2e8f0; border-radius: 12px 12px 0 0;">
+                                        <div>
+                                            <h5 class="mb-0 font-weight-bold text-dark"><i class="fas fa-boxes text-primary mr-2"></i> B2B Institutional Fulfillment Mode</h5>
+                                            <small class="text-muted"><?= htmlspecialchars($creditProfile['institution_name']) ?></small>
+                                        </div>
+                                        <span class="badge badge-primary px-2 py-1"><i class="fas fa-certificate mr-1"></i> Standing Partner</span>
+                                    </div>
+                                    <div class="card-body p-3">
+                                        <!-- Mode 1: Standard Wholesale -->
+                                        <div class="custom-control custom-radio mb-3 p-3 rounded bg-white border">
+                                            <input id="fulfillment_standard" name="fulfillment_mode" value="standard" type="radio" class="custom-control-input fulfillment-radio" checked>
+                                            <label class="custom-control-label font-weight-bold d-flex align-items-center" for="fulfillment_standard">
+                                                <i class="fas fa-truck text-secondary mr-2"></i> Standard Wholesale Delivery
+                                            </label>
+                                            <small class="text-muted d-block ml-4 mt-1">Independent courier dispatch via GHN Logistics with standard shipping fee.</small>
+                                        </div>
+
+                                        <!-- Mode 2: Consolidate with Next Batch (If available) -->
+                                        <?php if ($candidateBatch): ?>
+                                        <div class="custom-control custom-radio mb-3 p-3 rounded bg-white border border-success" style="border-left-width: 4px !important;">
+                                            <input id="fulfillment_batch" name="fulfillment_mode" value="batch_consolidation" type="radio" class="custom-control-input fulfillment-radio" data-batch-id="<?= $candidateBatch['id'] ?>">
+                                            <label class="custom-control-label font-weight-bold d-flex align-items-center text-success" for="fulfillment_batch">
+                                                <i class="fas fa-calendar-check mr-2"></i> Consolidate with Upcoming Batch #<?= htmlspecialchars($candidateBatch['batch_code']) ?>
+                                                <span class="badge badge-success ml-2">FREE Delivery</span>
+                                            </label>
+                                            <small class="text-muted d-block ml-4 mt-1">
+                                                Merge this order into your scheduled delivery release on <strong><?= date('l, M d, Y', strtotime($candidateBatch['scheduled_date'])) ?></strong>.
+                                                <span class="text-danger font-weight-bold ml-1">(Cut-off: <?= date('M d, H:i', strtotime($candidateBatch['cut_off_time'])) ?>)</span>
+                                            </small>
+                                            <input type="hidden" name="batch_id" value="<?= $candidateBatch['id'] ?>">
+                                        </div>
+                                        <?php endif; ?>
+
+                                        <!-- Mode 3: Urgent Ad-hoc Restock (Deferred Settlement) -->
+                                        <div class="custom-control custom-radio p-3 rounded bg-white border border-warning" style="border-left-width: 4px !important;">
+                                            <input id="fulfillment_urgent" name="fulfillment_mode" value="urgent_ad_hoc" type="radio" class="custom-control-input fulfillment-radio">
+                                            <label class="custom-control-label font-weight-bold d-flex align-items-center text-dark" for="fulfillment_urgent">
+                                                <i class="fas fa-bolt text-warning mr-2"></i> Urgent B2B Restock (Priority Dispatch & Trade Credit)
+                                                <span class="badge badge-warning text-dark ml-2">Deferred Payment</span>
+                                            </label>
+                                            <small class="text-muted d-block ml-4 mt-1">
+                                                Immediate priority warehouse picking and dispatch. Charge unsettled balance directly to your next <strong>Statement of Account (SOA)</strong>.
+                                            </small>
+                                            <div class="alert alert-info py-2 px-3 mt-2 mb-0 small ml-4">
+                                                <i class="fas fa-info-circle mr-1"></i> Available Credit: <strong><?= format_vnd($creditProfile['available_credit']) ?></strong> / Credit Line: <?= format_vnd($creditProfile['credit_limit']) ?>
+                                                <?php if ($creditEval['status'] === 'APPROVED_ON_CREDIT'): ?>
+                                                    <div class="text-success mt-1"><i class="fas fa-check-circle mr-1"></i> <strong>100% Approved on Credit:</strong> No payment required today.</div>
+                                                <?php else: ?>
+                                                    <div class="text-warning mt-1"><i class="fas fa-exclamation-circle mr-1"></i> <strong>Over-limit Notice:</strong> A 30% security deposit (<?= format_vnd($creditEval['required_deposit']) ?>) is required upfront.</div>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <?php endif; ?>
+
                                 <hr class="mb-4">
                                 <div class="title"> <span>Payment Method</span> </div>
                                 <div class="d-block my-3">
+                                    <?php if ($hasB2BCredit): ?>
+                                    <div id="b2b-credit-option" class="custom-control custom-radio mb-3 p-3 rounded border" style="background: #eff6ff; border-color: #93c5fd !important;">
+                                        <input id="b2b_credit" name="paymentMethod" value="b2b_credit" type="radio" class="custom-control-input">
+                                        <label class="custom-control-label font-weight-bold d-flex align-items-center" for="b2b_credit">
+                                            <i class="fas fa-file-invoice-dollar text-primary mr-2 fa-lg"></i>
+                                            <span style="color: #1d4ed8;">Institutional Trade Credit (Deferred Settlement)</span>
+                                            <span class="badge badge-primary ml-2" style="font-size: 10px;">B2B Net Terms</span>
+                                        </label>
+                                        <small class="text-muted d-block ml-4 mt-1">
+                                            Zero upfront payment today. The total will be billed on your periodic Statement of Account (SOA).
+                                        </small>
+                                    </div>
+                                    <?php endif; ?>
                                     <div class="custom-control custom-radio mb-3 p-3 rounded border" style="background: <?= $is_cod_allowed ? '#fafbfc' : '#f8f9fa' ?>; border-color: #e2e8f0 !important;">
                                         <input id="cod" name="paymentMethod" value="cod" type="radio" class="custom-control-input" <?= $is_cod_allowed ? 'checked' : 'disabled' ?> required>
                                         <label class="custom-control-label font-weight-bold d-flex align-items-center" for="cod">
@@ -287,6 +371,33 @@ $(document).ready(function() {
         }
     });
 
+    let lastCalculatedFee = 0;
+
+    // Fulfillment mode switching
+    $('.fulfillment-radio').on('change', function() {
+        let mode = $(this).val();
+        if (mode === 'batch_consolidation') {
+            $('#shipping-fee').html('<span class="badge badge-success px-2 py-1"><i class="fas fa-check mr-1"></i> FREE (Batch Delivery)</span>');
+            $('#shipping_fee_input').val(0);
+            updateTotal(0);
+        } else if (mode === 'urgent_ad_hoc') {
+            if ($('#b2b_credit').length) {
+                $('#b2b_credit').prop('checked', true);
+            }
+            if (lastCalculatedFee > 0) {
+                $('#shipping-fee').text(formatCurrency(lastCalculatedFee));
+                $('#shipping_fee_input').val(lastCalculatedFee);
+            }
+            updateTotal(lastCalculatedFee);
+        } else {
+            if (lastCalculatedFee > 0) {
+                $('#shipping-fee').text(formatCurrency(lastCalculatedFee));
+                $('#shipping_fee_input').val(lastCalculatedFee);
+            }
+            updateTotal(lastCalculatedFee);
+        }
+    });
+
     // On Ward Change -> Calculate Fee
     $('#ward').on('change', function() {
         let to_district_id = $('#district').val();
@@ -302,9 +413,16 @@ $(document).ready(function() {
             }, function(response) {
                 if (response.code === 200 && response.data) {
                     let fee = response.data.total;
-                    $('#shipping-fee').text(formatCurrency(fee));
-                    $('#shipping_fee_input').val(fee);
-                    updateTotal(fee);
+                    lastCalculatedFee = fee;
+                    if ($('#fulfillment_batch').is(':checked')) {
+                        $('#shipping-fee').html('<span class="badge badge-success px-2 py-1"><i class="fas fa-check mr-1"></i> FREE (Batch Delivery)</span>');
+                        $('#shipping_fee_input').val(0);
+                        updateTotal(0);
+                    } else {
+                        $('#shipping-fee').text(formatCurrency(fee));
+                        $('#shipping_fee_input').val(fee);
+                        updateTotal(fee);
+                    }
                 } else {
                     $('#shipping-fee').text('Fee calculation error');
                     alert(response.message || 'GHN shipping fee calculation error');
@@ -323,7 +441,9 @@ $(document).ready(function() {
         // Enforce 5,000,000 VND limit for COD dynamically
         if (final_total_vnd > 5000000) {
             $('#cod').prop('disabled', true).prop('checked', false);
-            $('#momo').prop('checked', true);
+            if (!$('#b2b_credit').is(':checked')) {
+                $('#momo').prop('checked', true);
+            }
             $('#cod-limit-alert').removeClass('d-none');
         } else {
             $('#cod').prop('disabled', false);

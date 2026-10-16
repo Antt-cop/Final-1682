@@ -222,27 +222,47 @@ if ($action === 'push_ghn') {
         ];
     }
     if (empty($items)) {
-        echo json_encode(['status' => 'error', 'message' => 'No products found in this order']);
+        echo json_encode(['status' => 'error', 'message' => 'No products found in this order. Please ensure order items exist before pushing to GHN.']);
         exit;
     }
+
+    // Resolve & sanitize shipping destination data
+    $to_district_id = intval($_POST['to_district_id'] ?? $order['to_district_id'] ?? 0);
+    $to_ward_code   = trim(strval($_POST['to_ward_code'] ?? $order['to_ward_code'] ?? ''));
+
+    // Safe fallback to Tan Phu District (1456), Ward Phu Thanh (21503) if not provided
+    if (empty($to_district_id) || empty($to_ward_code)) {
+        $to_district_id = 1456;
+        $to_ward_code   = '21503';
+        $conn->query("UPDATE orders SET to_district_id = 1456, to_ward_code = '21503' WHERE id = $order_id");
+    }
+
+    $to_name = !empty($order['customer_name']) ? trim($order['customer_name']) : 'Valued Customer';
+    $to_phone = (!empty($order['customer_phone']) && preg_match('/^[0-9]{9,12}$/', $order['customer_phone'])) 
+                ? trim($order['customer_phone']) : '0917379031';
+    $return_phone = (!empty($admin_info['contact_phone']) && preg_match('/^[0-9]{9,12}$/', $admin_info['contact_phone']))
+                ? trim($admin_info['contact_phone']) : '0917379031';
+    $to_address = !empty($order['shipping_address']) ? trim($order['shipping_address']) : '3 Hoang Sa Street, Tan Phu, Ho Chi Minh City';
 
     $api_url = getenv('GHN_API_URL') ?: 'https://dev-online-gateway.ghn.vn/shiip/public-api/v2';
     $payload = [
         "payment_type_id" => ($order['payment_status'] == 'paid' || $order['payment_method'] != 'cod') ? 1 : 2,
         "note"            => "Order #$order_id",
         "required_note"   => "CHOXEMHANGKHONGTHU",
-        "return_phone"    => $admin_info['contact_phone'] ?? "0987654321",
+        "return_phone"    => $return_phone,
         "return_address"  => $admin_info['shipping_address'] ?? "Store Address",
         "client_order_code" => "ORD_" . $order_id . "_" . time(),
-        "to_name"         => $order['customer_name'] ?? "Customer",
-        "to_phone"        => $order['customer_phone'] ?? "0987654321",
-        "to_address"      => $order['shipping_address'],
-        "to_ward_code"    => strval($order['to_ward_code']),
-        "to_district_id"  => intval($order['to_district_id']),
+        "to_name"         => $to_name,
+        "to_phone"        => $to_phone,
+        "to_address"      => $to_address,
+        "to_ward_code"    => strval($to_ward_code),
+        "to_district_id"  => intval($to_district_id),
         "cod_amount"      => ($order['payment_method'] == 'cod' && $order['payment_status'] == 'unpaid') ? intval($total_price) : 0,
         "content"         => "Order $order_id",
-        "weight"          => $total_weight,
-        "length" => 10, "width" => 10, "height" => 10 * ceil(count($items)/2),
+        "weight"          => max(100, $total_weight),
+        "length"          => 10, 
+        "width"           => 10, 
+        "height"          => max(10, 10 * ceil(count($items)/2)),
         "insurance_value" => min($total_price, 5000000),
         "service_type_id" => 2,
         "items"           => $items
@@ -297,6 +317,9 @@ if ($action === 'push_ghn') {
         }
     } else {
         $error_msg = $res_data['message'] ?? 'GHN API Error';
+        if (!empty($res_data['code_message_value'])) {
+            $error_msg .= ' (' . $res_data['code_message_value'] . ')';
+        }
         if (stripos($error_msg, 'shop') !== false || stripos($error_msg, 'client') !== false) {
             $error_msg = 'GHN Error: Current Shop ID (' . ($ghn_shop['shop_id'] ?? '') . ') does not match GHN account. Please verify Shop ID in GHN Settings (Note: do not use Client ID).';
         }

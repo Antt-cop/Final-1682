@@ -40,6 +40,21 @@ $stmt->bind_result($user_name, $user_email, $user_phone, $user_address, $user_ro
 $stmt->fetch();
 $stmt->close();
 
+require_once ROOT_PATH . '/app/services/CreditManagementService.php';
+require_once ROOT_PATH . '/app/services/StandingAgreementService.php';
+require_once ROOT_PATH . '/app/services/BillingStatementService.php';
+
+$creditService = new CreditManagementService($conn);
+$standingService = new StandingAgreementService($conn);
+$billingService = new BillingStatementService($conn);
+
+$creditProfile = $creditService->getCreditProfile($user_id);
+$activeAgreement = $standingService->getActiveAgreement($user_id);
+$upcomingBatches = $activeAgreement ? $standingService->getUpcomingBatches((int)$activeAgreement['id'], 6) : [];
+$billingStatements = $billingService->getStatementsByUser($user_id);
+$candidateBatch = $standingService->getNextConsolidationBatch($user_id);
+$hasB2BCredit = ($creditProfile && $creditProfile['credit_limit'] > 0);
+
 // 2. Orders count
 $order_count = 0;
 $o_res = $conn->query("SELECT COUNT(*) as cnt FROM orders WHERE user_id = $user_id");
@@ -317,6 +332,95 @@ include INCLUDES_PATH . '/header.php';
     </div>
     <!-- End Account Welcome -->
 
+    <?php if ($hasB2BCredit): ?>
+    <!-- Start B2B Institutional Supply & Credit Management Card -->
+    <div class="container mb-4">
+        <div class="card border-0 shadow-sm" style="border-radius: 16px; overflow: hidden; background: #ffffff; border: 1px solid #e2e8f0 !important;">
+            <div class="card-header bg-white py-3 px-4 d-flex align-items-center justify-content-between flex-wrap" style="border-bottom: 1px solid #edf2f7;">
+                <div class="d-flex align-items-center">
+                    <div style="width: 44px; height: 44px; border-radius: 10px; background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-right: 14px;">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <div>
+                        <h4 class="mb-0 font-weight-bold text-dark">Institutional Supply & Trade Credit</h4>
+                        <span class="text-muted small"><?= htmlspecialchars($creditProfile['institution_name']) ?></span>
+                    </div>
+                </div>
+                <div class="mt-2 mt-md-0">
+                    <span class="badge badge-success px-3 py-2" style="font-size: 12px; border-radius: 20px;">
+                        <i class="fas fa-shield-alt mr-1"></i> Active Standing Agreement
+                    </span>
+                </div>
+            </div>
+            <div class="card-body p-4">
+                <div class="row">
+                    <!-- Contract Details -->
+                    <div class="col-lg-5 mb-3 mb-lg-0 border-right">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted small font-weight-bold">CONTRACT NUMBER</span>
+                            <span class="badge badge-primary"><?= htmlspecialchars($activeAgreement['agreement_code'] ?? 'AGR-PENDING') ?></span>
+                        </div>
+                        <h5 class="font-weight-bold text-dark mb-2"><?= htmlspecialchars($activeAgreement['title'] ?? 'Standard Institutional Supply') ?></h5>
+                        <div class="small text-muted mb-2">
+                            <i class="fas fa-calendar-alt text-primary mr-1"></i> Schedule: <strong><?= ucfirst($activeAgreement['frequency'] ?? 'Weekly') ?></strong> (<?= strtoupper($activeAgreement['delivery_days'] ?? 'MON, THU') ?>)
+                            <span class="mx-2">•</span>
+                            <i class="fas fa-file-invoice text-info mr-1"></i> Billing: <strong><?= strtoupper($activeAgreement['billing_cycle'] ?? 'NET_15') ?></strong>
+                        </div>
+                        <?php if ($candidateBatch): ?>
+                        <div class="p-2 rounded bg-light border border-success mt-3 small">
+                            <i class="fas fa-clock text-success mr-1"></i> <strong>Next Scheduled Batch:</strong> #<?= htmlspecialchars($candidateBatch['batch_code']) ?> on <?= date('D, M d, Y', strtotime($candidateBatch['scheduled_date'])) ?>
+                            <div class="text-muted ml-3">Consolidation Cut-off: <?= date('M d, H:i', strtotime($candidateBatch['cut_off_time'])) ?></div>
+                        </div>
+                        <?php endif; ?>
+                        <div class="mt-3">
+                            <button class="btn btn-sm btn-outline-primary font-weight-bold mr-2" data-toggle="modal" data-target="#batchesModal">
+                                <i class="fas fa-truck-loading mr-1"></i> Delivery Releases (<?= count($upcomingBatches) ?>)
+                            </button>
+                            <button class="btn btn-sm btn-outline-dark font-weight-bold" data-toggle="modal" data-target="#statementsModal">
+                                <i class="fas fa-file-invoice-dollar mr-1"></i> Statements of Account (<?= count($billingStatements) ?>)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Credit Gauge -->
+                    <div class="col-lg-7 pl-lg-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted small font-weight-bold">TRADE CREDIT LINE & EXPOSURE</span>
+                            <span class="small font-weight-bold <?= $creditProfile['is_healthy'] ? 'text-success' : 'text-danger' ?>">
+                                <?= $creditProfile['utilization_percent'] ?>% Utilized
+                            </span>
+                        </div>
+                        <div class="progress mb-3" style="height: 10px; border-radius: 5px; background: #e2e8f0;">
+                            <div class="progress-bar <?= $creditProfile['is_healthy'] ? 'bg-success' : 'bg-danger' ?>" role="progressbar" style="width: <?= min(100, $creditProfile['utilization_percent']) ?>%;"></div>
+                        </div>
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <small class="text-muted d-block">Credit Line</small>
+                                <strong class="text-dark"><?= format_vnd($creditProfile['credit_limit']) ?></strong>
+                            </div>
+                            <div class="col-4 border-left border-right">
+                                <small class="text-muted d-block">Current Debt</small>
+                                <strong class="text-danger"><?= format_vnd($creditProfile['current_debt']) ?></strong>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted d-block">Available Credit</small>
+                                <strong class="text-success"><?= format_vnd($creditProfile['available_credit']) ?></strong>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between p-2 mt-3 rounded" style="background: #f1f5f9;">
+                            <small class="text-muted">
+                                <i class="fas fa-shield-alt text-primary mr-1"></i> Escrow Security Collateral: <strong><?= format_vnd($creditProfile['security_deposit']) ?></strong>
+                            </small>
+                            <span class="badge badge-light border text-muted">Protected Account</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End B2B Institutional Supply & Credit Management Card -->
+    <?php endif; ?>
+
     <script>
     function openAddressModal() {
         if (window.jQuery) { jQuery('#addressModal').modal('show'); }
@@ -557,6 +661,153 @@ include INCLUDES_PATH . '/header.php';
                             <p class="text-muted small mb-0">Supports B2B wholesale contract settlements and official VAT tax invoicing.</p>
                         </div>
                         <span class="badge badge-primary ml-auto" style="border-radius: 999px; padding: 5px 10px;">B2B Hub</span>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light" style="border-radius: 0 0 12px 12px; padding: 14px 24px;">
+                    <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal" style="border-radius: 6px;">Close</button>
+                </div>
+            </div>
+        </div>
+    <!-- Modal: Delivery Releases Schedule -->
+    <div class="modal fade" id="batchesModal" tabindex="-1" role="dialog" aria-labelledby="batchesModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content" style="border-radius: 12px; border: none; box-shadow: 0 15px 35px rgba(0,0,0,0.25);">
+                <div class="modal-header" style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); color: #fff; border-radius: 12px 12px 0 0; padding: 18px 24px;">
+                    <h5 class="modal-title font-weight-bold text-white mb-0" id="batchesModalLabel">
+                        <i class="fas fa-truck-loading mr-2 text-warning"></i> Scheduled Delivery Releases (Batches)
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="opacity: 0.9;">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-muted small mb-3">
+                        <i class="fas fa-info-circle text-primary mr-1"></i> Deliveries are decomposed from your active standing agreement into scheduled batches. Ad-hoc orders placed prior to the consolidation cut-off merge directly into these releases at zero logistics cost.
+                    </p>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered align-middle">
+                            <thead class="thead-light small text-uppercase font-weight-bold">
+                                <tr>
+                                    <th>Release Code</th>
+                                    <th>Scheduled Date</th>
+                                    <th>Cut-off Deadline</th>
+                                    <th>Orders Merged</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (!empty($upcomingBatches)): ?>
+                                    <?php foreach ($upcomingBatches as $batch): ?>
+                                    <tr>
+                                        <td class="font-weight-bold text-primary">#<?= htmlspecialchars($batch['batch_code']) ?></td>
+                                        <td><strong><?= date('D, M d, Y', strtotime($batch['scheduled_date'])) ?></strong></td>
+                                        <td>
+                                            <span class="small text-muted"><?= date('M d, H:i', strtotime($batch['cut_off_time'])) ?></span>
+                                            <?php if (strtotime($batch['cut_off_time']) > time()): ?>
+                                                <span class="badge badge-success ml-1">Open</span>
+                                            <?php else: ?>
+                                                <span class="badge badge-secondary ml-1">Locked</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td><?= (int)$batch['consolidated_order_count'] ?> order(s)</td>
+                                        <td>
+                                            <?php if ($batch['status'] === 'delivered'): ?>
+                                                <span class="badge badge-success"><i class="fas fa-check-circle mr-1"></i> Delivered</span>
+                                            <?php elseif ($batch['status'] === 'dispatched'): ?>
+                                                <span class="badge badge-info"><i class="fas fa-truck mr-1"></i> In Transit</span>
+                                            <?php elseif ($batch['status'] === 'packing'): ?>
+                                                <span class="badge badge-warning text-dark"><i class="fas fa-box-open mr-1"></i> Packing</span>
+                                            <?php else: ?>
+                                                <span class="badge badge-light border text-primary"><i class="fas fa-calendar mr-1"></i> Scheduled</span>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted py-3">No scheduled batches found for this agreement.</td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light" style="border-radius: 0 0 12px 12px; padding: 14px 24px;">
+                    <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal" style="border-radius: 6px;">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Statements of Account (SOA) -->
+    <div class="modal fade" id="statementsModal" tabindex="-1" role="dialog" aria-labelledby="statementsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content" style="border-radius: 12px; border: none; box-shadow: 0 15px 35px rgba(0,0,0,0.25);">
+                <div class="modal-header" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #fff; border-radius: 12px 12px 0 0; padding: 18px 24px;">
+                    <h5 class="modal-title font-weight-bold text-white mb-0" id="statementsModalLabel">
+                        <i class="fas fa-file-invoice-dollar mr-2 text-warning"></i> Consolidated Statements of Account (SOA)
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="opacity: 0.9;">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-muted small mb-3">
+                        <i class="fas fa-info-circle text-primary mr-1"></i> All regular scheduled releases and urgent ad-hoc restock orders are reconciled into periodic Statements of Account. Pay your entire cycle balance in a single transaction to restore your trade credit limit.
+                    </p>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered align-middle">
+                            <thead class="thead-light small text-uppercase font-weight-bold">
+                                <tr>
+                                    <th>Statement Code</th>
+                                    <th>Billing Cycle</th>
+                                    <th>Total Due</th>
+                                    <th>Due Date</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (!empty($billingStatements)): ?>
+                                    <?php foreach ($billingStatements as $stmt): ?>
+                                    <tr>
+                                        <td class="font-weight-bold text-dark"><?= htmlspecialchars($stmt['statement_code']) ?></td>
+                                        <td class="small">
+                                            <?= date('M d', strtotime($stmt['cycle_start'])) ?> - <?= date('M d, Y', strtotime($stmt['cycle_end'])) ?>
+                                        </td>
+                                        <td class="font-weight-bold text-danger"><?= format_vnd($stmt['total_amount']) ?></td>
+                                        <td>
+                                            <span class="small font-weight-bold"><?= date('M d, Y', strtotime($stmt['due_date'])) ?></span>
+                                        </td>
+                                        <td>
+                                            <?php if ($stmt['status'] === 'settled'): ?>
+                                                <span class="badge badge-success"><i class="fas fa-check mr-1"></i> Settled</span>
+                                            <?php else: ?>
+                                                <span class="badge badge-warning text-dark"><i class="fas fa-clock mr-1"></i> Pending Payment</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td>
+                                            <?php if ($stmt['status'] !== 'settled'): ?>
+                                                <form action="<?= BASE_URL ?>/app/handlers/settle_statement.php" method="POST" class="d-inline" onsubmit="return confirm('Settle this Statement of Account via MoMo Sandbox?');">
+                                                    <input type="hidden" name="statement_id" value="<?= $stmt['id'] ?>">
+                                                    <input type="hidden" name="payment_method" value="momo">
+                                                    <button type="submit" class="btn btn-sm btn-primary py-1 px-2 font-weight-bold" style="background:#a50064; border-color:#a50064;">
+                                                        <i class="fas fa-bolt mr-1"></i> Settle MoMo
+                                                    </button>
+                                                </form>
+                                            <?php else: ?>
+                                                <span class="text-success small font-weight-bold"><i class="fas fa-check-circle"></i> Paid</span>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted py-3">No billing statements generated yet. Statements are issued automatically at the end of each billing cycle.</td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
                 <div class="modal-footer bg-light" style="border-radius: 0 0 12px 12px; padding: 14px 24px;">

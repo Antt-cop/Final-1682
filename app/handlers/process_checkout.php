@@ -33,6 +33,9 @@ $bulk_discount = $resolved_cart['bulk_discount'];
 $grand_total   = $resolved_cart['grand_total'];
 
 
+require_once ROOT_PATH . '/app/services/CreditManagementService.php';
+require_once ROOT_PATH . '/app/services/StandingAgreementService.php';
+
 // Get form data
 $address = trim($_POST['address'] ?? '');
 $province_name = trim($_POST['province_name'] ?? '');
@@ -41,7 +44,9 @@ $ward_name = trim($_POST['ward_name'] ?? '');
 $to_district_id = intval($_POST['to_district_id'] ?? 0);
 $to_ward_code = trim($_POST['to_ward_code'] ?? '');
 $shipping_fee = floatval($_POST['shipping_fee'] ?? 0);
-$payment_method = $_POST['paymentMethod'] ?? 'cod'; // default to cod
+$payment_method = $_POST['paymentMethod'] ?? 'cod';
+$fulfillment_mode = $_POST['fulfillment_mode'] ?? 'standard';
+$batch_id = !empty($_POST['batch_id']) ? intval($_POST['batch_id']) : null;
 $user_id = $_SESSION['user_id'];
 
 // Validation
@@ -51,11 +56,47 @@ if (empty($address) || empty($province_name) || empty($district_name) || empty($
     exit;
 }
 
+// B2B Fulfillment Mode routing
+$order_type = 'standard';
+$is_urgent = 0;
+$payment_mode = 'immediate';
+$deposit_amount = 0.00;
+$order_status = 'pending';
+
+$creditService = new CreditManagementService($conn);
+
+if ($fulfillment_mode === 'batch_consolidation') {
+    $order_type = 'standing_release';
+    $shipping_fee = 0.00; // Free delivery for scheduled releases
+} elseif ($fulfillment_mode === 'urgent_ad_hoc') {
+    $order_type = 'urgent_ad_hoc';
+    $is_urgent = 1;
+}
+
 // Add shipping fee to grand total
 $grand_total += $shipping_fee;
 
+// Handle Trade Credit Evaluation
+if ($payment_method === 'b2b_credit') {
+    $creditEval = $creditService->evaluateOrderCredit($user_id, $grand_total);
+    if ($creditEval['status'] === 'APPROVED_ON_CREDIT') {
+        $payment_mode = 'deferred_to_cycle';
+        $order_status = 'processing'; // Direct to warehouse fulfillment
+    } else {
+        $_SESSION['error'] = $creditEval['message'] . ' Please select MoMo or VNPAY to pay the required security down-payment.';
+        header("Location: " . BASE_URL . "/public/checkout.php");
+        exit;
+    }
+} elseif ($is_urgent && in_array($payment_method, ['momo', 'vnpay'])) {
+    $creditEval = $creditService->evaluateOrderCredit($user_id, $grand_total);
+    if ($creditEval['status'] === 'DEPOSIT_REQUIRED') {
+        $payment_mode = 'partial_deposit';
+        $deposit_amount = $creditEval['required_deposit'];
+    }
+}
+
 // Validate COD Limit
-$max_cod_value = 5000000; // 5,000,000 VND limit for example
+$max_cod_value = 5000000;
 if ($payment_method === 'cod' && $grand_total > $max_cod_value) {
     $_SESSION['error'] = 'Order exceeds the COD payment limit (max ' . format_vnd($max_cod_value) . '). Please choose another payment method.';
     header("Location: " . BASE_URL . "/public/checkout.php");
@@ -67,9 +108,24 @@ $full_shipping_address = $address . ', ' . $ward_name . ', ' . $district_name . 
 
 $conn->begin_transaction();
 try {
-    // 1. Insert into orders
-    $stmt = $conn->prepare("INSERT INTO orders (user_id, total_amount, status, payment_method, payment_status, shipping_address, to_district_id, to_ward_code, created_at) VALUES (?, ?, 'pending', ?, 'unpaid', ?, ?, ?, NOW())");
-    $stmt->bind_param("idssis", $user_id, $grand_total, $payment_method, $full_shipping_address, $to_district_id, $to_ward_code);
+    // 1. Insert into orders with B2B fulfillment and credit columns
+    $stmt = $conn->prepare("INSERT INTO orders 
+        (user_id, total_amount, status, order_type, payment_method, payment_status, payment_mode, deposit_amount, batch_id, is_urgent, shipping_address, to_district_id, to_ward_code, created_at) 
+        VALUES (?, ?, ?, ?, ?, 'unpaid', ?, ?, ?, ?, ?, ?, ?, NOW())");
+    $stmt->bind_param("idssssdiisis", 
+        $user_id, 
+        $grand_total, 
+        $order_status, 
+        $order_type, 
+        $payment_method, 
+        $payment_mode, 
+        $deposit_amount, 
+        $batch_id, 
+        $is_urgent, 
+        $full_shipping_address, 
+        $to_district_id, 
+        $to_ward_code
+    );
     $stmt->execute();
     $order_id = $stmt->insert_id;
 
@@ -95,12 +151,34 @@ try {
 
 
     // 3. Handle Payment Method Branch
+    if ($payment_method === 'b2b_credit') {
+        // Record unsettled debt on the buyer's credit profile
+        $creditService->recordDebt($user_id, $grand_total);
+
+        // Record audit log
+        $logNote = "Order placed via B2B Institutional Trade Credit. Amount of " . format_vnd($grand_total) . " deferred to Statement of Account.";
+        $stmt_log = $conn->prepare("INSERT INTO order_logs (order_id, user_id, old_status, new_status, old_payment_status, new_payment_status, note, created_at) VALUES (?, ?, 'pending', 'processing', 'unpaid', 'unpaid', ?, NOW())");
+        if ($stmt_log) {
+            $stmt_log->bind_param("iis", $order_id, $user_id, $logNote);
+            $stmt_log->execute();
+        }
+
+        $conn->commit();
+        unset($_SESSION['cart']);
+
+        $_SESSION['success'] = "B2B Order #$order_id placed successfully! Dispatched immediately on institutional trade credit. Amount will be billed on your next Statement of Account.";
+        header("Location: " . BASE_URL . "/public/checkout.php");
+        exit;
+    }
+
+    $onlineChargeAmount = ($payment_mode === 'partial_deposit' && $deposit_amount > 0) ? $deposit_amount : $grand_total;
+
     if ($payment_method === 'vnpay') {
         require_once ROOT_PATH . '/app/services/VNPayPaymentService.php';
         $vnpayService = new VNPayPaymentService();
 
         $orderInfo = "Payment for order #" . $order_id . " - Dong Khoi Store";
-        $vnpayUrl = $vnpayService->createPaymentUrl($order_id, $grand_total, $orderInfo);
+        $vnpayUrl = $vnpayService->createPaymentUrl($order_id, $onlineChargeAmount, $orderInfo);
 
         if (!empty($vnpayUrl)) {
             // Log creation
@@ -128,7 +206,7 @@ try {
         $momoService = new MoMoPaymentService();
 
         $orderInfo = "Payment for order #" . $order_id . " - Dong Khoi Store";
-        $momoRes = $momoService->createPaymentRequest($order_id, $grand_total, $orderInfo);
+        $momoRes = $momoService->createPaymentRequest($order_id, $onlineChargeAmount, $orderInfo);
 
         if ($momoRes['success'] && !empty($momoRes['payUrl'])) {
             // Log creation

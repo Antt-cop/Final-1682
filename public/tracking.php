@@ -234,7 +234,7 @@ include INCLUDES_PATH . '/header.php';
                                     <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
 
                                         <?php if (!empty($order['tracking_code'])): ?>
-                                            <a href="https://tracking.ghn.dev/?order_code=<?= htmlspecialchars($order['tracking_code']) ?>"
+                                            <a href="https://donhang.ghn.vn/?order_code=<?= htmlspecialchars($order['tracking_code']) ?>"
                                                target="_blank"
                                                class="btn btn-sm btn-primary">
                                                 <i class="fas fa-truck mr-1"></i> Tracking Order

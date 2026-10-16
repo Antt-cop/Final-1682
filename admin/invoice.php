@@ -14,11 +14,15 @@ if ($order_id <= 0) {
     die('Invalid order ID');
 }
 
-// Fetch order with user institution details
+// Fetch order with user institution details, batch, and agreement
 $order_res = $conn->query("
-    SELECT o.*, u.username, u.email, u.contact_phone, u.institution_name, u.shipping_address as user_address
+    SELECT o.*, u.username, u.email, u.contact_phone, u.institution_name, u.shipping_address as user_address,
+           b.batch_code, b.scheduled_date as batch_scheduled_date,
+           a.agreement_code, a.title as agreement_title
     FROM orders o 
     LEFT JOIN users u ON o.user_id = u.id 
+    LEFT JOIN delivery_batches b ON o.batch_id = b.id
+    LEFT JOIN standing_agreements a ON b.agreement_id = a.id
     WHERE o.id = $order_id
 ");
 
@@ -213,6 +217,16 @@ $grand_total  = floatval($order['total_amount']);
         <!-- 3. Logistics & Order Status Meta -->
         <div class="row mb-4">
             <div class="col-sm-12">
+                <?php if (!empty($order['batch_code'])): ?>
+                    <div class="alert alert-info py-2 px-3 mb-3 small" style="border-radius: 6px;">
+                        <i class="fas fa-boxes mr-1"></i> <strong>SCM Fulfillment:</strong> Consolidated into Delivery Release <strong>#<?= htmlspecialchars($order['batch_code']) ?></strong> under Master Contract <strong>#<?= htmlspecialchars($order['agreement_code']) ?></strong> (Scheduled Delivery: <?= date('M d, Y', strtotime($order['batch_scheduled_date'])) ?>).
+                    </div>
+                <?php elseif (($order['order_type'] ?? '') === 'urgent_ad_hoc'): ?>
+                    <div class="alert alert-warning py-2 px-3 mb-3 small" style="border-radius: 6px;">
+                        <i class="fas fa-bolt mr-1"></i> <strong>SCM Priority Restock:</strong> Dispatched immediately under institutional trade credit terms. Settled via periodic Statement of Account.
+                    </div>
+                <?php endif; ?>
+
                 <table class="table table-sm table-bordered mb-0" style="background:#fcfdfd;">
                     <tbody>
                         <tr>
@@ -220,6 +234,7 @@ $grand_total  = floatval($order['total_amount']);
                             <td style="width: 25%;">
                                 <?php
                                 $pay_map = [
+                                    'b2b_credit'    => '<span class="badge badge-primary badge-b2b" style="background:#1d4ed8;">Trade Credit (Deferred)</span>',
                                     'cod'           => '<span class="badge badge-secondary badge-b2b">Cash on Delivery (COD)</span>',
                                     'vnpay'         => '<span class="badge badge-primary badge-b2b" style="background:#005baa;">VNPAY Gateway</span>',
                                     'momo'          => '<span class="badge badge-danger badge-b2b" style="background:#a50064;">MoMo E-Wallet</span>',
@@ -233,8 +248,10 @@ $grand_total  = floatval($order['total_amount']);
                             <td style="width: 25%;">
                                 <?php if ($order['payment_status'] === 'paid'): ?>
                                     <span class="badge badge-success badge-b2b"><i class="fas fa-check-circle mr-1"></i>Paid</span>
+                                <?php elseif (($order['payment_mode'] ?? '') === 'deferred_to_cycle'): ?>
+                                    <span class="badge badge-info badge-b2b"><i class="fas fa-file-invoice mr-1"></i>Deferred to Statement (SOA)</span>
                                 <?php else: ?>
-                                    <span class="badge badge-warning badge-b2b text-dark"><i class="fas fa-clock mr-1"></i>Unpaid (COD Collection)</span>
+                                    <span class="badge badge-warning badge-b2b text-dark"><i class="fas fa-clock mr-1"></i>Unpaid</span>
                                 <?php endif; ?>
                             </td>
                         </tr>
